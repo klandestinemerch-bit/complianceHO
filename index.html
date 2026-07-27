@@ -1732,13 +1732,15 @@ function empGols(e){
   if(r&&r.ma!==undefined&&r.ma!==null&&r.ma!=='')return parseFloat(r.ma)||0;
   return parseInt(e.produktif)||0;
 }
-// DIVISI: agar tampilan Divisi di Data Karyawan selalu mengikuti Divisi yang
-// tercatat di modul Produktivitas (jika karyawan sudah terhubung). Jika belum
-// terhubung / record produktivitas tidak punya divisi, jatuhkan ke divisi master.
+// DIVISI: Divisi/Cabang SELALU mengikuti data master di Data Karyawan (e.div),
+// supaya konsisten di semua tampilan (tabel, form, pencarian, evidence, dll).
+// Data Produktivitas hanya dipakai sebagai cadangan kalau karyawan belum
+// punya divisi di data masternya sama sekali.
 function empDiv(e){
+  if(e.div&&e.div.trim())return e.div;
   const r=empGolsRecord(e);
   if(r&&r.div)return r.div;
-  return e.div;
+  return '-';
 }
 // STATUS AKTIF/NON-AKTIF: field e.aktif bertipe boolean. Karyawan lama (belum
 // pernah diset) dianggap aktif secara default (aktif!==false), supaya data lama
