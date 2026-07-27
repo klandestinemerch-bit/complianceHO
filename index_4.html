@@ -791,6 +791,15 @@ body.login-active{overflow:hidden;height:100vh}
 
   <!-- DENDA PELANGGARAN -->
   <div id="page-denda" style="display:none">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:.6rem">
+      <div style="font-size:11px;color:var(--text3)" id="dendaPeriodNote"><i class="ti ti-calendar-stats"></i> Menampilkan data: <b id="dendaPeriodNoteLabel">Bulan Ini</b></div>
+      <div class="filter-row" style="margin:0;align-items:center">
+        <button class="filter-btn denda-period-filter active" id="dendaBtnBulanIni" onclick="setDendaPeriod('bulan-ini',this)"><i class="ti ti-calendar"></i> Bulan Ini</button>
+        <button class="filter-btn denda-period-filter" id="dendaBtnSemua" onclick="setDendaPeriod('semua',this)"><i class="ti ti-infinity"></i> Semua Waktu</button>
+        <input type="month" id="dendaMonthPicker" class="form-input" style="padding:6px 10px;font-size:12px;width:auto" onchange="setDendaMonthPicked(this.value)" title="Pilih bulan & tahun tertentu">
+      </div>
+    </div>
+    <div id="dendaMonthChips" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:.8rem"></div>
     <div class="metrics-grid">
       <div class="mcard c-amber"><div class="mcard-lbl"><i class="ti ti-alert-triangle"></i>Total Denda Ringan</div><div class="mcard-val" id="denda-ringan-total">Rp 0</div><div class="mcard-sub" id="denda-ringan-count">0 temuan</div></div>
       <div class="mcard" style="border-color:var(--purple)"><div class="mcard-lbl" style="color:var(--purple)"><i class="ti ti-alert-square"></i>Total Denda Sedang</div><div class="mcard-val" id="denda-sedang-total" style="color:var(--purple)">Rp 0</div><div class="mcard-sub" id="denda-sedang-count">0 temuan</div></div>
@@ -1836,6 +1845,59 @@ function fmtRp(v){return 'Rp '+ (parseInt(v)||0).toLocaleString('id-ID')}
 let trendLineChartInst=null;
 let trendPieChartInst=null;
 
+let dendaPeriod='bulan-ini'; // 'bulan-ini' | 'semua' | 'YYYY-MM' (bulan spesifik yang dipilih via kalender)
+const BULAN_ID=['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+function dendaYM(dateStr){
+  const d=new Date(dateStr);if(isNaN(d))return null;
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+}
+function dendaMatchesPeriod(dateStr){
+  if(dendaPeriod==='semua')return true;
+  const ym=dendaYM(dateStr);if(!ym)return false;
+  if(dendaPeriod==='bulan-ini'){
+    const now=new Date();
+    return ym===`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  }
+  return ym===dendaPeriod;
+}
+function dendaPeriodLabel(){
+  if(dendaPeriod==='semua')return 'Semua Waktu';
+  if(dendaPeriod==='bulan-ini'){
+    const now=new Date();
+    return `${BULAN_ID[now.getMonth()]} ${now.getFullYear()} (Bulan Ini)`;
+  }
+  const[y,m]=dendaPeriod.split('-');
+  return `${BULAN_ID[parseInt(m)-1]} ${y}`;
+}
+function setDendaPeriod(mode,btn){
+  dendaPeriod=mode;
+  document.querySelectorAll('.denda-period-filter').forEach(b=>b.classList.remove('active'));
+  if(btn)btn.classList.add('active');
+  const picker=document.getElementById('dendaMonthPicker');if(picker)picker.value='';
+  renderDendaTable();updateMetrics();renderDendaMonthChips();
+}
+function setDendaMonthPicked(value){
+  if(!value)return;
+  dendaPeriod=value; // format input[type=month] sudah YYYY-MM
+  document.querySelectorAll('.denda-period-filter').forEach(b=>b.classList.remove('active'));
+  renderDendaTable();updateMetrics();renderDendaMonthChips();
+}
+function renderDendaMonthChips(){
+  const wrap=document.getElementById('dendaMonthChips');if(!wrap)return;
+  const recs=DB.get('denda');
+  const byMonth={};
+  recs.forEach(r=>{const ym=dendaYM(r.tgl);if(!ym)return;(byMonth[ym]=byMonth[ym]||[]).push(r)});
+  const months=Object.keys(byMonth).sort().reverse();
+  if(!months.length){wrap.innerHTML='';return}
+  wrap.innerHTML='<span style="font-size:10px;color:var(--text3);align-self:center;margin-right:2px">Per Bulan:</span>'+months.map(ym=>{
+    const[y,m]=ym.split('-');
+    const list=byMonth[ym];
+    const total=list.reduce((a,x)=>a+(parseInt(x.nominal)||0),0);
+    const cnt=list.reduce((a,x)=>a+(parseInt(x.jumlah)||0),0);
+    const active=dendaPeriod===ym;
+    return`<button onclick="setDendaMonthPicked('${ym}')" style="cursor:pointer;border:.5px solid ${active?'var(--blue)':'var(--border2)'};background:${active?'var(--blue-bg)':'var(--surface2)'};color:${active?'var(--blue)':'var(--text2)'};border-radius:20px;padding:5px 12px;font-size:11px;font-weight:600;white-space:nowrap">${BULAN_ID[parseInt(m)-1].slice(0,3)} ${y} · ${cnt} temuan · ${fmtRp(total)}</button>`;
+  }).join('');
+}
 function updateMetrics(){
   autoLinkProduktivitas();
   const emps=DB.get('employees').filter(isEmpActive);
@@ -1857,12 +1919,14 @@ function updateMetrics(){
   const bhs=DB.get('berhenti');
   s('bh-fraud',bhs.filter(x=>x.alasan==='Fraud').length);s('bh-perform',bhs.filter(x=>x.alasan==='Tidak Perform').length);s('bh-resign',bhs.filter(x=>x.alasan==='Resign').length);s('bh-total',bhs.length);
   const dendas=DB.get('denda');
-  const sumLevel=(lvl)=>dendas.filter(x=>x.level===lvl).reduce((a,x)=>a+(parseInt(x.nominal)||0),0);
-  const cntLevel=(lvl)=>dendas.filter(x=>x.level===lvl).reduce((a,x)=>a+(parseInt(x.jumlah)||0),0);
+  const dendaScope=dendas.filter(x=>dendaMatchesPeriod(x.tgl));
+  const sumLevel=(lvl)=>dendaScope.filter(x=>x.level===lvl).reduce((a,x)=>a+(parseInt(x.nominal)||0),0);
+  const cntLevel=(lvl)=>dendaScope.filter(x=>x.level===lvl).reduce((a,x)=>a+(parseInt(x.jumlah)||0),0);
   s('denda-ringan-total',fmtRp(sumLevel('TEMUAN RINGAN')));s('denda-ringan-count',cntLevel('TEMUAN RINGAN')+' temuan');
   s('denda-sedang-total',fmtRp(sumLevel('TEMUAN SEDANG')));s('denda-sedang-count',cntLevel('TEMUAN SEDANG')+' temuan');
   s('denda-berat-total',fmtRp(sumLevel('TEMUAN BERAT')));s('denda-berat-count',cntLevel('TEMUAN BERAT')+' temuan');
-  s('denda-grand-total',fmtRp(dendas.reduce((a,x)=>a+(parseInt(x.nominal)||0),0)));s('denda-grand-count',dendas.reduce((a,x)=>a+(parseInt(x.jumlah)||0),0)+' temuan');
+  s('denda-grand-total',fmtRp(dendaScope.reduce((a,x)=>a+(parseInt(x.nominal)||0),0)));s('denda-grand-count',dendaScope.reduce((a,x)=>a+(parseInt(x.jumlah)||0),0)+' temuan');
+  s('dendaPeriodNoteLabel',dendaPeriodLabel());
 }
 
 // ============================================================
@@ -2555,8 +2619,10 @@ function importKamusExcel(evt){
 }
 
 function renderDendaTable(){
-  const recs=DB.get('denda');const emps=DB.get('employees');const tb=document.getElementById('dendaBody');const em=document.getElementById('dendaEmpty');if(!tb)return;
-  if(!recs.length){tb.innerHTML='';if(em)em.style.display='block';return}if(em)em.style.display='none';
+  const all=DB.get('denda');const emps=DB.get('employees');const tb=document.getElementById('dendaBody');const em=document.getElementById('dendaEmpty');if(!tb)return;
+  const recs=all.filter(r=>dendaMatchesPeriod(r.tgl));
+  renderDendaMonthChips();
+  if(!recs.length){tb.innerHTML='';if(em){em.style.display='block';const p=em.querySelector('p');if(p)p.textContent=all.length?`Tidak ada data denda untuk ${dendaPeriodLabel()}`:'Belum ada data'}return}if(em)em.style.display='none';
   const lvlC={'TEMUAN RINGAN':'s-izin','TEMUAN SEDANG':'s-cuti','TEMUAN BERAT':'s-alpha'};
   tb.innerHTML=[...recs].reverse().map(r=>{const e=emps.find(x=>x.id===parseInt(r.empId));const evCount=getCombinedEvidenceCount(r.empId,r.evidence);const evBtn=`<button class="btn-detail" style="margin-right:6px" title="Lihat Semua Bukti Evidence Karyawan Ini" onclick="openEvidenceModalById('denda','${r.id}')"><i class="ti ti-paperclip"></i>${evCount?` ${evCount}`:''}</button>`;return`<tr><td style="font-size:12px">${r.tgl}</td><td><div class="emp-name">${e?e.name:'-'}</div></td><td style="font-size:12px;color:var(--text2)">${r.jabatan||(e?e.role:'-')}</td><td style="font-size:12px;color:var(--text2)">${r.cabang||'-'}</td><td><span class="status-pill ${lvlC[r.level]||'s-izin'}">${r.level}</span></td><td style="font-size:12px;text-align:center">${r.jumlah||1}</td><td style="font-size:12px;font-weight:700">${fmtRp(r.nominal)}</td><td>${evBtn}<button class="btn-detail btn-edit-restricted" style="margin-right:6px" onclick="openFormDenda('${r.id}')"><i class="ti ti-edit"></i></button><button class="btn-del" onclick="deleteRecord('denda','${r.id}',()=>{renderDendaTable();updateMetrics()})"><i class="ti ti-trash"></i></button></td></tr>`}).join('');
   updateMetrics();
