@@ -427,7 +427,7 @@ body.login-active{overflow:hidden;height:100vh}
     <button class="nav-item" onclick="showPage('berhenti',this)"><i class="ti ti-user-off"></i>Diberhentikan</button>
   </div>
   <div class="nav-section" style="margin-top:1rem;padding-top:1rem;border-top:.5px solid var(--border)">
-    <button class="nav-item" onclick="showPage('pengaturan',this)"><i class="ti ti-settings"></i>Pengaturan</button>
+    <button class="nav-item admin-only" onclick="showPage('pengaturan',this)"><i class="ti ti-settings"></i>Pengaturan</button>
     <button class="nav-item" onclick="showPage('logout',this)"><i class="ti ti-logout"></i>Keluar</button>
   </div>
 </aside>
@@ -1324,6 +1324,18 @@ body.login-active{overflow:hidden;height:100vh}
         <div class="form-group full"><label class="form-label">Alasan *</label><textarea id="spAlasan" class="form-textarea"></textarea></div>
         <div class="form-group"><label class="form-label">Berlaku Sampai</label><input type="date" id="spSampai" class="form-input"></div>
         <div class="form-group"><label class="form-label">Status</label><select id="spStatus" class="form-select"><option value="Aktif">Aktif</option><option value="Selesai">Selesai</option><option value="Eskalasi">Dieskalasi</option></select></div>
+        <div class="form-group full">
+          <label class="form-label">Bukti Evidence (Foto &amp; PDF) — Opsional</label>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
+            <button type="button" class="btn-excel-import" onclick="document.getElementById('spFotoInput').click()"><i class="ti ti-camera"></i>Upload Foto</button>
+            <button type="button" class="btn-print" onclick="document.getElementById('spPdfInput').click()"><i class="ti ti-file-type-pdf"></i>Upload PDF</button>
+            <input type="file" id="spFotoInput" accept="image/*" multiple style="display:none" onchange="handleEvidenceUpload(event,'spEvidenceData','spEvidenceList','foto')">
+            <input type="file" id="spPdfInput" accept="application/pdf" multiple style="display:none" onchange="handleEvidenceUpload(event,'spEvidenceData','spEvidenceList','pdf')">
+          </div>
+          <div id="spEvidenceList" style="display:flex;gap:8px;flex-wrap:wrap"></div>
+          <input type="hidden" id="spEvidenceData">
+          <div style="font-size:10px;color:var(--text3);margin-top:6px">Maks 3MB per file. Format foto: JPG/PNG. Bisa upload lebih dari satu file.</div>
+        </div>
       </div>
     </div>
     <div class="form-footer"><button class="btn-cancel" onclick="closeFormSP()">Batal</button><button class="btn-save" onclick="saveSP()"><i class="ti ti-device-floppy"></i>Simpan</button></div>
@@ -1984,14 +1996,16 @@ function openEvidenceModal(evidenceArr,title){
   document.getElementById('evidenceModalTitle').innerHTML=`<i class="ti ti-paperclip"></i>${title||'Bukti Evidence'}`;
   window.__evidenceCurrentArr=evidenceArr||[];
   if(!evidenceArr||!evidenceArr.length){
-    body.innerHTML='<div class="empty-state" style="padding:1rem 0"><i class="ti ti-photo-off"></i><p>Belum ada bukti evidence untuk data ini</p></div>';
+    body.innerHTML='<div class="empty-state" style="padding:1rem 0"><i class="ti ti-photo-off"></i><p>Belum ada bukti evidence untuk karyawan ini</p></div>';
   }else{
+    const srcColor={sp:'#eab308',teguran:'#a855f7',denda:'#f97316'};
     body.innerHTML=evidenceArr.map((it,i)=>{
       const safeName=it.name||(it.type==='foto'?'Foto Bukti':'Dokumen PDF');
+      const badge=it._sourceLabel?`<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px"><span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:${srcColor[it._source]||'var(--surface2)'}22;color:${srcColor[it._source]||'var(--text2)'}">${it._sourceLabel}</span>${it._date?`<span style="font-size:10px;color:var(--text3)">${it._date}</span>`:''}</div>`:'';
       if(it.type==='foto'){
-        return`<div style="border:.5px solid var(--border);border-radius:var(--radius);padding:8px"><div style="display:flex;gap:10px;align-items:center"><img src="${it.data}" style="width:56px;height:56px;object-fit:cover;border-radius:6px;cursor:pointer;flex-shrink:0" onclick="toggleEvidencePreview(${i})"><div style="flex:1;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${safeName}</div><button class="btn-detail" onclick="toggleEvidencePreview(${i})" title="Lihat"><i class="ti ti-eye"></i></button><a class="btn-detail" href="${it.data}" download="${safeName}" title="Unduh"><i class="ti ti-download"></i></a></div><div id="evPreview-${i}" style="display:none;margin-top:10px"><img src="${it.data}" style="max-width:100%;max-height:420px;border-radius:8px;display:block;margin:0 auto"></div></div>`;
+        return`<div style="border:.5px solid var(--border);border-radius:var(--radius);padding:8px">${badge}<div style="display:flex;gap:10px;align-items:center"><img src="${it.data}" style="width:56px;height:56px;object-fit:cover;border-radius:6px;cursor:pointer;flex-shrink:0" onclick="toggleEvidencePreview(${i})"><div style="flex:1;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${safeName}</div><button class="btn-detail" onclick="toggleEvidencePreview(${i})" title="Lihat"><i class="ti ti-eye"></i></button><a class="btn-detail" href="${it.data}" download="${safeName}" title="Unduh"><i class="ti ti-download"></i></a></div><div id="evPreview-${i}" style="display:none;margin-top:10px"><img src="${it.data}" style="max-width:100%;max-height:420px;border-radius:8px;display:block;margin:0 auto"></div></div>`;
       }
-      return`<div style="border:.5px solid var(--border);border-radius:var(--radius);padding:8px"><div style="display:flex;gap:10px;align-items:center"><div style="width:56px;height:56px;border-radius:6px;background:var(--surface2);display:flex;align-items:center;justify-content:center;color:var(--red);font-size:22px;flex-shrink:0"><i class="ti ti-file-type-pdf"></i></div><div style="flex:1;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${safeName}</div><button class="btn-detail" onclick="toggleEvidencePreview(${i})" title="Review PDF"><i class="ti ti-eye"></i> Review</button><a class="btn-detail" href="${it.data}" download="${safeName}" title="Unduh"><i class="ti ti-download"></i></a></div><div id="evPreview-${i}" style="display:none;margin-top:10px"><iframe id="evFrame-${i}" style="width:100%;height:380px;border:none;border-radius:8px;background:#fff" title="${safeName}"></iframe></div></div>`;
+      return`<div style="border:.5px solid var(--border);border-radius:var(--radius);padding:8px">${badge}<div style="display:flex;gap:10px;align-items:center"><div style="width:56px;height:56px;border-radius:6px;background:var(--surface2);display:flex;align-items:center;justify-content:center;color:var(--red);font-size:22px;flex-shrink:0"><i class="ti ti-file-type-pdf"></i></div><div style="flex:1;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${safeName}</div><button class="btn-detail" onclick="toggleEvidencePreview(${i})" title="Review PDF"><i class="ti ti-eye"></i> Review</button><a class="btn-detail" href="${it.data}" download="${safeName}" title="Unduh"><i class="ti ti-download"></i></a></div><div id="evPreview-${i}" style="display:none;margin-top:10px"><iframe id="evFrame-${i}" style="width:100%;height:380px;border:none;border-radius:8px;background:#fff" title="${safeName}"></iframe></div></div>`;
     }).join('');
   }
   document.getElementById('evidenceModalOverlay').classList.add('open');
@@ -2013,12 +2027,36 @@ function toggleEvidencePreview(i){
     }
   }
 }
+function getCombinedEvidenceCount(empId,fallbackEvidence){
+  if(!empId)return(fallbackEvidence||[]).length;
+  let total=0;
+  ['sp','teguran','denda'].forEach(modStore=>{
+    DB.get(modStore).filter(x=>String(x.empId)===String(empId)).forEach(x=>{total+=(x.evidence||[]).length});
+  });
+  return total;
+}
 function openEvidenceModalById(store,id){
   const recs=DB.get(store);
   const r=recs.find(x=>String(x.id)===String(id));if(!r)return;
   const emps=DB.get('employees');
   const e=r.empId?emps.find(x=>x.id===parseInt(r.empId)):null;
-  openEvidenceModal(r.evidence||[],`Bukti Evidence — ${e?e.name:'-'}`);
+  const nama=e?e.name:(r.empName||'-');
+  const sourceLabels={sp:'SP Performance',teguran:'Teguran',denda:'Denda Pelanggaran'};
+  let combined=[];
+  if(r.empId){
+    // Kumpulkan SEMUA bukti evidence dari SP, Teguran & Denda untuk karyawan yang sama (tersinkron per nama karyawan)
+    ['sp','teguran','denda'].forEach(modStore=>{
+      DB.get(modStore).filter(x=>String(x.empId)===String(r.empId)).forEach(x=>{
+        (x.evidence||[]).forEach(ev=>{
+          combined.push({...ev,_source:modStore,_sourceLabel:sourceLabels[modStore],_date:x.tgl||''});
+        });
+      });
+    });
+    combined.sort((a,b)=>(b._date||'').localeCompare(a._date||''));
+  }else{
+    combined=(r.evidence||[]).map(ev=>({...ev,_source:store,_sourceLabel:sourceLabels[store]||store,_date:r.tgl||''}));
+  }
+  openEvidenceModal(combined,`Bukti Evidence — ${nama}`);
 }
 function closeEvidenceModal(e){if(e.target===document.getElementById('evidenceModalOverlay'))closeEvidenceModalDirect()}
 function closeEvidenceModalDirect(){
@@ -2166,7 +2204,10 @@ function renderEmpTable2(){
   }
   tb.innerHTML=emps.map(e=>{
     const active=isEmpActive(e);
-    return`<tr${active?'':' style="opacity:.55"'}><td>${av(e)}</td><td><div><div class="emp-name">${e.name}</div><div class="emp-role">${e.telp||'-'}</div></div></td><td style="font-size:12px;color:var(--text2)">${empDiv(e)}</td><td style="font-size:12px">${e.role}</td><td style="font-size:11px;color:var(--text3)">${fmtJoin(e.joinDate)}</td><td style="font-size:12px">${e.kontrak||'-'}</td><td><label class="status-switch" title="${active?'Aktif — klik untuk nonaktifkan':'Non-Aktif — klik untuk aktifkan'}"><input type="checkbox" ${active?'checked':''} onchange="toggleEmpAktif(${e.id})"><span class="status-switch-slider"></span></label></td><td style="display:flex;gap:4px"><button class="btn-detail" onclick="openFormEmpEdit(${e.id})"><i class="ti ti-edit"></i></button><button class="btn-del" onclick="deleteEmp(${e.id})"><i class="ti ti-trash"></i></button></td></tr>`;
+    const switchHtml=currentRole==='user'
+      ?`<span class="status-pill ${active?'s-hadir':'s-alpha'}" style="opacity:.8">${active?'Aktif':'Non-Aktif'}</span>`
+      :`<label class="status-switch" title="${active?'Aktif — klik untuk nonaktifkan':'Non-Aktif — klik untuk aktifkan'}"><input type="checkbox" ${active?'checked':''} onchange="toggleEmpAktif(${e.id})"><span class="status-switch-slider"></span></label>`;
+    return`<tr${active?'':' style="opacity:.55"'}><td>${av(e)}</td><td><div><div class="emp-name">${e.name}</div><div class="emp-role">${e.telp||'-'}</div></div></td><td style="font-size:12px;color:var(--text2)">${empDiv(e)}</td><td style="font-size:12px">${e.role}</td><td style="font-size:11px;color:var(--text3)">${fmtJoin(e.joinDate)}</td><td style="font-size:12px">${e.kontrak||'-'}</td><td>${switchHtml}</td><td style="display:flex;gap:4px"><button class="btn-detail btn-edit-restricted" onclick="openFormEmpEdit(${e.id})"><i class="ti ti-edit"></i></button><button class="btn-del" onclick="deleteEmp(${e.id})"><i class="ti ti-trash"></i></button></td></tr>`;
   }).join('');
   updateEmp2SortIcons();
 }
@@ -2244,7 +2285,7 @@ function renderProdTable(){
     const statusCell=perluPanggil?`<span class="status-pill s-alpha"><i class="ti ti-phone-call"></i>Perlu Dipanggil</span> <button class="btn-detail" style="margin-left:6px;font-size:10px;padding:3px 8px" onclick="suratUntukProduktivitas('${r.id}')"><i class="ti ti-file-text"></i>Surat</button>${waBtn}`:'<span class="status-pill s-hadir"><i class="ti ti-check"></i>Aman</span>';
     const namaCell=e?`<div class="emp-name">${e.name}</div><div class="emp-role">${e.role}</div>`:`<div class="emp-name">${r.nama}</div><div style="font-size:10px;color:var(--red);display:flex;align-items:center;gap:3px"><i class="ti ti-alert-triangle"></i>Belum terhubung</div>`;
     // Kolom Gols disembunyikan di tabel ini karena sudah tersinkron & tampil di Dashboard (tabel Daftar Karyawan).
-    return`<tr><td><div class="emp-info">${e?av(e):avNama(r.nama)}<div>${namaCell}</div></div></td><td style="font-size:12px;color:var(--text2)">${e?e.div:(r.div||'-')}</td><td><div class="bar-wrap"><div class="bar-bg"><div class="bar-fill" style="width:${Math.min(ma,100)}%;background:${gcProd(ma)}"></div></div><span class="bar-lbl" style="color:${gcProd(ma)}">${ma.toFixed(2).replace('.',',')}%</span></div>${e?'<i class="ti ti-link" title="Gols tersinkron ke Dashboard" style="font-size:10px;color:var(--green);margin-left:3px"></i>':''}</td><td>${statusCell}</td><td style="display:flex;gap:4px"><button class="btn-detail" onclick="openFormProd('${r.id}')" title="${e?'Edit':'Hubungkan ke Data Karyawan'}"><i class="ti ti-${e?'edit':'link'}"></i></button><button class="btn-del" onclick="deleteRecord('produktivitas','${r.id}',renderProdTable)"><i class="ti ti-trash"></i></button></td></tr>`;
+    return`<tr><td><div class="emp-info">${e?av(e):avNama(r.nama)}<div>${namaCell}</div></div></td><td style="font-size:12px;color:var(--text2)">${e?e.div:(r.div||'-')}</td><td><div class="bar-wrap"><div class="bar-bg"><div class="bar-fill" style="width:${Math.min(ma,100)}%;background:${gcProd(ma)}"></div></div><span class="bar-lbl" style="color:${gcProd(ma)}">${ma.toFixed(2).replace('.',',')}%</span></div>${e?'<i class="ti ti-link" title="Gols tersinkron ke Dashboard" style="font-size:10px;color:var(--green);margin-left:3px"></i>':''}</td><td>${statusCell}</td><td style="display:flex;gap:4px"><button class="btn-detail btn-edit-restricted" onclick="openFormProd('${r.id}')" title="${e?'Edit':'Hubungkan ke Data Karyawan'}"><i class="ti ti-${e?'edit':'link'}"></i></button><button class="btn-del" onclick="deleteRecord('produktivitas','${r.id}',renderProdTable)"><i class="ti ti-trash"></i></button></td></tr>`;
   }).join('');
   updateProdSortIcons();
 }
@@ -2406,7 +2447,7 @@ function renderKebersihanTable(){
 function renderSPTable(){
   const recs=DB.get('sp');const emps=DB.get('employees');const tb=document.getElementById('spBody');const em=document.getElementById('spEmpty');if(!tb)return;
   if(!recs.length){tb.innerHTML='';if(em)em.style.display='block';return}if(em)em.style.display='none';
-  tb.innerHTML=[...recs].reverse().map(r=>{const e=emps.find(x=>x.id===parseInt(r.empId));const lc=r.level==='SP 1'?'sp-1':r.level==='SP 2'?'sp-2':'sp-3';const sc2=r.status==='Aktif'?'s-alpha':r.status==='Selesai'?'s-hadir':'s-izin';return`<tr><td style="font-size:12px">${r.tgl}</td><td><div class="emp-name">${e?e.name:'-'}</div><div class="emp-role" style="font-size:11px">${e?e.div:''}</div></td><td style="font-size:12px;color:var(--text2)">${e?e.div:'-'}</td><td><span class="score-pill ${lc}">${r.level}</span></td><td style="text-align:center"><button class="btn-detail" title="Lihat Alasan SP" onclick="openInfoTextById('sp','${r.id}','alasan','Alasan SP')"><i class="ti ti-info-circle"></i></button></td><td style="font-size:12px">${r.oleh||'-'}</td><td style="font-size:12px">${r.sampai||'-'}</td><td><span class="status-pill ${sc2}">${r.status}</span></td><td><button class="btn-detail" style="margin-right:6px" onclick="openFormSP('${r.id}')"><i class="ti ti-edit"></i></button><button class="btn-del" onclick="deleteRecord('sp','${r.id}',()=>{renderSPTable();updateMetrics()})"><i class="ti ti-trash"></i></button></td></tr>`}).join('');
+  tb.innerHTML=[...recs].reverse().map(r=>{const e=emps.find(x=>x.id===parseInt(r.empId));const lc=r.level==='SP 1'?'sp-1':r.level==='SP 2'?'sp-2':'sp-3';const sc2=r.status==='Aktif'?'s-alpha':r.status==='Selesai'?'s-hadir':'s-izin';const evCount=getCombinedEvidenceCount(r.empId,r.evidence);const evBtn=`<button class="btn-detail" style="margin-right:6px" title="Lihat Semua Bukti Evidence Karyawan Ini" onclick="openEvidenceModalById('sp','${r.id}')"><i class="ti ti-paperclip"></i>${evCount?` ${evCount}`:''}</button>`;return`<tr><td style="font-size:12px">${r.tgl}</td><td><div class="emp-name">${e?e.name:'-'}</div><div class="emp-role" style="font-size:11px">${e?e.div:''}</div></td><td style="font-size:12px;color:var(--text2)">${e?e.div:'-'}</td><td><span class="score-pill ${lc}">${r.level}</span></td><td style="text-align:center"><button class="btn-detail" title="Lihat Alasan SP" onclick="openInfoTextById('sp','${r.id}','alasan','Alasan SP')"><i class="ti ti-info-circle"></i></button></td><td style="font-size:12px">${r.oleh||'-'}</td><td style="font-size:12px">${r.sampai||'-'}</td><td><span class="status-pill ${sc2}">${r.status}</span></td><td>${evBtn}<button class="btn-detail btn-edit-restricted" style="margin-right:6px" onclick="openFormSP('${r.id}')"><i class="ti ti-edit"></i></button><button class="btn-del" onclick="deleteRecord('sp','${r.id}',()=>{renderSPTable();updateMetrics()})"><i class="ti ti-trash"></i></button></td></tr>`}).join('');
   updateMetrics();
 }
 
@@ -2449,7 +2490,7 @@ function renderTeguranTable(){
   if(!recs.length){tb.innerHTML='';if(em)em.style.display='block';updateTegSortIcons();return}if(em)em.style.display='none';
   const sorted=tegSortKey?sortTeguranList(recs,emps):[...recs].reverse();
   updateTegSortIcons();
-  tb.innerHTML=sorted.map(r=>{const e=emps.find(x=>x.id===parseInt(r.empId));const jc=r.jenis==='Teguran Lisan'?'sp-1':'sp-2';const sc2=r.status==='Selesai'?'s-hadir':'s-izin';const evCount=r.evidence?r.evidence.length:0;const evBtn=`<button class="btn-detail" style="margin-right:6px;position:relative" title="Lihat Bukti Evidence" onclick="openEvidenceModalById('teguran','${r.id}')"><i class="ti ti-paperclip"></i>${evCount?` ${evCount}`:''}</button>`;return`<tr><td style="font-size:12px">${r.tgl}</td><td><div class="emp-name">${e?e.name:'-'}</div></td><td style="font-size:12px;color:var(--text2)">${e?e.div:'-'}</td><td><span class="score-pill ${jc}">${r.jenis}</span></td><td style="text-align:center"><button class="btn-detail" title="Lihat Keterangan Pelanggaran" onclick="openInfoTextById('teguran','${r.id}','alasan','Keterangan Pelanggaran')"><i class="ti ti-info-circle"></i></button></td><td style="font-size:12px">${r.oleh||'-'}</td><td><span class="status-pill ${sc2}">${r.status}</span></td><td>${evBtn}<button class="btn-detail" style="margin-right:6px" onclick="openFormTeguran('${r.id}')"><i class="ti ti-edit"></i></button><button class="btn-del" onclick="deleteRecord('teguran','${r.id}',()=>{renderTeguranTable();updateMetrics()})"><i class="ti ti-trash"></i></button></td></tr>`}).join('');
+  tb.innerHTML=sorted.map(r=>{const e=emps.find(x=>x.id===parseInt(r.empId));const jc=r.jenis==='Teguran Lisan'?'sp-1':'sp-2';const sc2=r.status==='Selesai'?'s-hadir':'s-izin';const evCount=getCombinedEvidenceCount(r.empId,r.evidence);const evBtn=`<button class="btn-detail" style="margin-right:6px;position:relative" title="Lihat Semua Bukti Evidence Karyawan Ini" onclick="openEvidenceModalById('teguran','${r.id}')"><i class="ti ti-paperclip"></i>${evCount?` ${evCount}`:''}</button>`;return`<tr><td style="font-size:12px">${r.tgl}</td><td><div class="emp-name">${e?e.name:'-'}</div></td><td style="font-size:12px;color:var(--text2)">${e?e.div:'-'}</td><td><span class="score-pill ${jc}">${r.jenis}</span></td><td style="text-align:center"><button class="btn-detail" title="Lihat Keterangan Pelanggaran" onclick="openInfoTextById('teguran','${r.id}','alasan','Keterangan Pelanggaran')"><i class="ti ti-info-circle"></i></button></td><td style="font-size:12px">${r.oleh||'-'}</td><td><span class="status-pill ${sc2}">${r.status}</span></td><td>${evBtn}<button class="btn-detail btn-edit-restricted" style="margin-right:6px" onclick="openFormTeguran('${r.id}')"><i class="ti ti-edit"></i></button><button class="btn-del" onclick="deleteRecord('teguran','${r.id}',()=>{renderTeguranTable();updateMetrics()})"><i class="ti ti-trash"></i></button></td></tr>`}).join('');
   updateMetrics();
 }
 
@@ -2515,7 +2556,7 @@ function renderDendaTable(){
   const recs=DB.get('denda');const emps=DB.get('employees');const tb=document.getElementById('dendaBody');const em=document.getElementById('dendaEmpty');if(!tb)return;
   if(!recs.length){tb.innerHTML='';if(em)em.style.display='block';return}if(em)em.style.display='none';
   const lvlC={'TEMUAN RINGAN':'s-izin','TEMUAN SEDANG':'s-cuti','TEMUAN BERAT':'s-alpha'};
-  tb.innerHTML=[...recs].reverse().map(r=>{const e=emps.find(x=>x.id===parseInt(r.empId));const evCount=r.evidence?r.evidence.length:0;const evBtn=`<button class="btn-detail" style="margin-right:6px" title="Lihat Bukti Evidence" onclick="openEvidenceModalById('denda','${r.id}')"><i class="ti ti-paperclip"></i>${evCount?` ${evCount}`:''}</button>`;return`<tr><td style="font-size:12px">${r.tgl}</td><td><div class="emp-name">${e?e.name:'-'}</div></td><td style="font-size:12px;color:var(--text2)">${r.jabatan||(e?e.role:'-')}</td><td style="font-size:12px;color:var(--text2)">${r.cabang||'-'}</td><td><span class="status-pill ${lvlC[r.level]||'s-izin'}">${r.level}</span></td><td style="font-size:12px;text-align:center">${r.jumlah||1}</td><td style="font-size:12px;font-weight:700">${fmtRp(r.nominal)}</td><td>${evBtn}<button class="btn-detail" style="margin-right:6px" onclick="openFormDenda('${r.id}')"><i class="ti ti-edit"></i></button><button class="btn-del" onclick="deleteRecord('denda','${r.id}',()=>{renderDendaTable();updateMetrics()})"><i class="ti ti-trash"></i></button></td></tr>`}).join('');
+  tb.innerHTML=[...recs].reverse().map(r=>{const e=emps.find(x=>x.id===parseInt(r.empId));const evCount=getCombinedEvidenceCount(r.empId,r.evidence);const evBtn=`<button class="btn-detail" style="margin-right:6px" title="Lihat Semua Bukti Evidence Karyawan Ini" onclick="openEvidenceModalById('denda','${r.id}')"><i class="ti ti-paperclip"></i>${evCount?` ${evCount}`:''}</button>`;return`<tr><td style="font-size:12px">${r.tgl}</td><td><div class="emp-name">${e?e.name:'-'}</div></td><td style="font-size:12px;color:var(--text2)">${r.jabatan||(e?e.role:'-')}</td><td style="font-size:12px;color:var(--text2)">${r.cabang||'-'}</td><td><span class="status-pill ${lvlC[r.level]||'s-izin'}">${r.level}</span></td><td style="font-size:12px;text-align:center">${r.jumlah||1}</td><td style="font-size:12px;font-weight:700">${fmtRp(r.nominal)}</td><td>${evBtn}<button class="btn-detail btn-edit-restricted" style="margin-right:6px" onclick="openFormDenda('${r.id}')"><i class="ti ti-edit"></i></button><button class="btn-del" onclick="deleteRecord('denda','${r.id}',()=>{renderDendaTable();updateMetrics()})"><i class="ti ti-trash"></i></button></td></tr>`}).join('');
   updateMetrics();
 }
 
@@ -2523,7 +2564,7 @@ function renderBerhentiTable(){
   const recs=DB.get('berhenti');const emps=DB.get('employees');const tb=document.getElementById('berhentiBody');const em=document.getElementById('berhentiEmpty');if(!tb)return;
   if(!recs.length){tb.innerHTML='';if(em)em.style.display='block';return}if(em)em.style.display='none';
   const alC={Fraud:'al-fraud','Tidak Perform':'al-perform',Resign:'al-resign',Lainnya:'al-other'};
-  tb.innerHTML=[...recs].reverse().map(r=>{const e=emps.find(x=>x.id===parseInt(r.empId));return`<tr><td style="font-size:12px">${r.tgl}</td><td><div class="emp-info">${e?av(e):'<div class="avatar" style="background:var(--surface2)">?</div>'}<div><div class="emp-name">${e?e.name:r.empName||'-'}</div></div></div></td><td style="font-size:12px;color:var(--text2)">${e?e.div:'-'}</td><td style="font-size:12px">${e?e.role:'-'}</td><td><span class="alasan-pill ${alC[r.alasan]||'al-other'}">${r.alasan}</span></td><td style="text-align:center"><button class="btn-detail" title="Lihat Keterangan" onclick="openInfoTextById('berhenti','${r.id}','ket','Keterangan Pemberhentian')"><i class="ti ti-info-circle"></i></button></td><td style="font-size:12px">${r.oleh||'-'}</td><td><button class="btn-detail" style="margin-right:6px" onclick="openFormBerhenti('${r.id}')"><i class="ti ti-edit"></i></button><button class="btn-del" onclick="deleteRecord('berhenti','${r.id}',()=>{renderBerhentiTable();updateMetrics()})"><i class="ti ti-trash"></i></button></td></tr>`}).join('');
+  tb.innerHTML=[...recs].reverse().map(r=>{const e=emps.find(x=>x.id===parseInt(r.empId));return`<tr><td style="font-size:12px">${r.tgl}</td><td><div class="emp-info">${e?av(e):'<div class="avatar" style="background:var(--surface2)">?</div>'}<div><div class="emp-name">${e?e.name:r.empName||'-'}</div></div></div></td><td style="font-size:12px;color:var(--text2)">${e?e.div:'-'}</td><td style="font-size:12px">${e?e.role:'-'}</td><td><span class="alasan-pill ${alC[r.alasan]||'al-other'}">${r.alasan}</span></td><td style="text-align:center"><button class="btn-detail" title="Lihat Keterangan" onclick="openInfoTextById('berhenti','${r.id}','ket','Keterangan Pemberhentian')"><i class="ti ti-info-circle"></i></button></td><td style="font-size:12px">${r.oleh||'-'}</td><td><button class="btn-detail btn-edit-restricted" style="margin-right:6px" onclick="openFormBerhenti('${r.id}')"><i class="ti ti-edit"></i></button><button class="btn-del" onclick="deleteRecord('berhenti','${r.id}',()=>{renderBerhentiTable();updateMetrics()})"><i class="ti ti-trash"></i></button></td></tr>`}).join('');
   updateMetrics();
 }
 
@@ -2639,10 +2680,13 @@ function openFormSP(id){
     document.getElementById('spAlasan').value=r.alasan||'';
     document.getElementById('spSampai').value=r.sampai||'';
     document.getElementById('spStatus').value=r.status||'Aktif';
+    evidenceSetArr('spEvidenceData',r.evidence||[]);
   }else{
     document.getElementById('formSPTitle').textContent='Tambah SP Performance';
     document.getElementById('spTgl').value=todayStr();document.getElementById('spEmp').value='';document.getElementById('spSampai').value='';document.getElementById('spAlasan').value='';document.getElementById('spOleh').value='';document.getElementById('spLevel').value='SP 1';document.getElementById('spStatus').value='Aktif';
+    evidenceSetArr('spEvidenceData',[]);
   }
+  evidenceRenderChips('spEvidenceData','spEvidenceList');
   document.getElementById('formSPOverlay').classList.add('open');
   empSelectSync('spEmp','spEmpSearch','spEmpDrop');
 }
@@ -2650,11 +2694,12 @@ function closeFormSP(){document.getElementById('formSPOverlay').classList.remove
 function saveSP(){
   const id=val('spId');
   const empId=val('spEmp'),tgl=val('spTgl'),alasan=val('spAlasan').trim();if(!empId||!tgl||!alasan){toast('Karyawan, Tanggal & Alasan wajib!','error');return}
-  const d={empId:parseInt(empId),tgl,level:val('spLevel'),alasan,oleh:val('spOleh'),sampai:val('spSampai'),status:val('spStatus')};
+  const d={empId:parseInt(empId),tgl,level:val('spLevel'),alasan,oleh:val('spOleh'),sampai:val('spSampai'),status:val('spStatus'),evidence:evidenceGetArr('spEvidenceData')};
   const recs=DB.get('sp');
   if(id){const i=recs.findIndex(x=>String(x.id)===String(id));if(i>=0)recs[i]={...recs[i],...d}}
   else{recs.push({id:Date.now().toString(),...d})}
-  DB.set('sp',recs);closeFormSP();renderSPTable();updateMetrics();toast(id?'SP diperbarui!':'SP disimpan!');
+  if(!DB.set('sp',recs))return;
+  closeFormSP();renderSPTable();updateMetrics();toast(id?'SP diperbarui!':'SP disimpan!');
 }
 
 // ============================================================
@@ -2818,7 +2863,7 @@ function openModal(id){
   const linked=empGolsRecord(e);
   const tl=recs.length?[...recs].reverse().slice(0,4).map(r=>`<div class="timeline-item"><div class="tl-dot" style="background:${gc(r.prod)}"></div><div><div style="font-size:12px">${r.catatan||'Performa '+r.prod+'%'}</div><div style="font-size:11px;color:var(--text3)">${r.tgl}</div></div></div>`).join(''):'<p style="font-size:12px;color:var(--text3);padding:8px 0">Belum ada catatan</p>';
   const fotoHtml=e.foto?`<img src="${e.foto}" style="width:60px;height:60px;border-radius:50%;object-fit:cover;border:3px solid var(--blue-bg);">`:`${av(e)}`;
-  document.getElementById('modalBody').innerHTML=`<div style="display:flex;align-items:center;gap:14px;margin-bottom:1rem"><div>${fotoHtml}</div><div style="flex:1"><div style="font-size:18px;font-weight:700">${e.name}</div><div style="font-size:12px;color:var(--text2);margin-top:2px">${e.role} · ${empDiv(e)}</div><div style="font-size:11px;color:var(--text3);margin-top:2px">Bergabung: ${fmtJoin(e.joinDate)}</div><div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap"><span class="score-pill ${scC[e.penampilan]||'sc-B'}">Penampilan ${e.penampilan}</span><span style="font-size:11px;padding:3px 9px;border-radius:20px;background:var(--surface2);color:var(--text2)">${e.kontrak||'-'}</span>${linked?'':'<span style="font-size:10px;padding:3px 9px;border-radius:20px;background:var(--red-bg);color:var(--red-txt)"><i class="ti ti-alert-triangle"></i> Belum terhubung ke Produktivitas</span>'}</div></div><div style="text-align:right"><div style="font-size:28px;font-weight:700;color:${gcProd(g)}">${g}%</div><div style="font-size:11px;color:var(--text2)">Gols</div></div></div><div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:1rem"><div class="mcard"><div class="mcard-lbl">No. Telepon</div><div style="font-size:14px;font-weight:600">${e.telp||'-'}</div></div><div class="mcard"><div class="mcard-lbl">Record Performa</div><div style="font-size:20px;font-weight:700;color:var(--blue)">${recs.length}</div></div></div>${e.catatan?`<div style="font-size:12px;padding:10px;background:var(--surface2);border-radius:var(--radius);margin-bottom:1rem;color:var(--text2)"><i class="ti ti-note"></i> ${e.catatan}</div>`:''}<div class="card-title" style="margin-bottom:8px"><i class="ti ti-history"></i>Riwayat Performa</div>${tl}<div style="display:flex;gap:8px;margin-top:1rem;padding-top:.75rem;border-top:.5px solid var(--border)"><button class="btn-detail" onclick="closeModalDirect();openFormEmpEdit(${e.id})"><i class="ti ti-edit"></i> Edit</button></div>`;
+  document.getElementById('modalBody').innerHTML=`<div style="display:flex;align-items:center;gap:14px;margin-bottom:1rem"><div>${fotoHtml}</div><div style="flex:1"><div style="font-size:18px;font-weight:700">${e.name}</div><div style="font-size:12px;color:var(--text2);margin-top:2px">${e.role} · ${empDiv(e)}</div><div style="font-size:11px;color:var(--text3);margin-top:2px">Bergabung: ${fmtJoin(e.joinDate)}</div><div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap"><span class="score-pill ${scC[e.penampilan]||'sc-B'}">Penampilan ${e.penampilan}</span><span style="font-size:11px;padding:3px 9px;border-radius:20px;background:var(--surface2);color:var(--text2)">${e.kontrak||'-'}</span>${linked?'':'<span style="font-size:10px;padding:3px 9px;border-radius:20px;background:var(--red-bg);color:var(--red-txt)"><i class="ti ti-alert-triangle"></i> Belum terhubung ke Produktivitas</span>'}</div></div><div style="text-align:right"><div style="font-size:28px;font-weight:700;color:${gcProd(g)}">${g}%</div><div style="font-size:11px;color:var(--text2)">Gols</div></div></div><div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:1rem"><div class="mcard"><div class="mcard-lbl">No. Telepon</div><div style="font-size:14px;font-weight:600">${e.telp||'-'}</div></div><div class="mcard"><div class="mcard-lbl">Record Performa</div><div style="font-size:20px;font-weight:700;color:var(--blue)">${recs.length}</div></div></div>${e.catatan?`<div style="font-size:12px;padding:10px;background:var(--surface2);border-radius:var(--radius);margin-bottom:1rem;color:var(--text2)"><i class="ti ti-note"></i> ${e.catatan}</div>`:''}<div class="card-title" style="margin-bottom:8px"><i class="ti ti-history"></i>Riwayat Performa</div>${tl}<div style="display:flex;gap:8px;margin-top:1rem;padding-top:.75rem;border-top:.5px solid var(--border)"><button class="btn-detail btn-edit-restricted" onclick="closeModalDirect();openFormEmpEdit(${e.id})"><i class="ti ti-edit"></i> Edit</button></div>`;
   document.getElementById('modalOverlay').classList.add('open');
 }
 function closeModal(e){if(e.target===document.getElementById('modalOverlay'))closeModalDirect()}
@@ -2830,6 +2875,10 @@ function closeModalDirect(){document.getElementById('modalOverlay').classList.re
 const allPages=['dashboard','karyawan','kamus','performa','produktivitas','penampilan','kebersihan','sp','teguran','denda','berhenti','pengaturan','logout'];
 const pageTitles={dashboard:'Dashboard Monitoring SDM',karyawan:'Manajemen Data Karyawan',kamus:'Kamus Pelanggaran',performa:'Monitoring Performa',produktivitas:'Monitoring Produktivitas',penampilan:'Laporan Temuan Penampilan',kebersihan:'Monitoring Kebersihan',sp:'Laporan SP Performance',teguran:'Laporan Teguran & Peringatan',denda:'Laporan Denda Pelanggaran',berhenti:'Laporan Karyawan Diberhentikan',pengaturan:'Pengaturan Sistem',logout:'Keluar'};
 function showPage(p,btn){
+  if(p==='pengaturan'&&currentRole==='user'){
+    toast('Akses Pengaturan hanya untuk Admin.','error');
+    return;
+  }
   allPages.forEach(id=>{const el=document.getElementById('page-'+id);if(el)el.style.display=id===p?'block':'none'});
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   if(btn)btn.classList.add('active');
@@ -3406,12 +3455,12 @@ function applyRoleRestrictions(role){
   if(role==='user'){
     let existing = document.getElementById('roStyle');
     if(!existing){ existing=document.createElement('style'); existing.id='roStyle'; document.head.appendChild(existing); }
-    existing.textContent='.admin-only{display:none!important} .btn-add{display:none!important} .btn-del{display:none!important} .btn-save{display:none!important} .form-footer .btn-save{display:none!important}';
+    existing.textContent='.admin-only{display:none!important} .btn-add{display:none!important} .btn-del{display:none!important} .btn-save{display:none!important} .form-footer .btn-save{display:none!important} .btn-edit-restricted{display:none!important} .btn-excel-import{display:none!important} .status-switch{display:none!important}';
     const bar=document.getElementById('readonlyBar');
     if(!bar){
       const b=document.createElement('div');
       b.className='readonly-bar'; b.id='readonlyBar';
-      b.innerHTML='<i class="ti ti-eye"></i>&nbsp;Anda masuk sebagai <strong>User</strong> — mode lihat saja. Tidak dapat menambah, mengedit, atau menghapus data.';
+      b.innerHTML='<i class="ti ti-eye"></i>&nbsp;Anda masuk sebagai <strong>User</strong> — mode lihat saja. Tidak dapat menambah, mengedit, menghapus, mengimpor data, atau mengakses Pengaturan.';
       const main=document.querySelector('.main');
       if(main) main.insertBefore(b, main.firstChild);
     }
