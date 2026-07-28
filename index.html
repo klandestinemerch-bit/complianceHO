@@ -1978,9 +1978,28 @@ function closeInfoTextModal(e){if(e.target===document.getElementById('infoTextMo
 function closeInfoTextModalDirect(){document.getElementById('infoTextModalOverlay').classList.remove('open')}
 
 // ============================================================
-// EVIDENCE UPLOAD (Foto & PDF) — dipakai di form Teguran, dll.
+// EVIDENCE UPLOAD (Foto & PDF) — dipakai di form Teguran, SP, Denda, dll.
+// File sungguhan diunggah ke Supabase Storage (bucket "evidence"), hanya
+// URL-nya yang disimpan di database — jauh lebih hemat & bisa menampung
+// jauh lebih banyak file dibanding menyimpan base64 di kolom database.
+// Kalau Supabase/Storage belum siap, otomatis fallback simpan lokal (base64).
 // ============================================================
-const EVIDENCE_MAX_SIZE=3*1024*1024; // 3MB per file, aman untuk penyimpanan lokal
+const EVIDENCE_MAX_SIZE=8*1024*1024; // 8MB per file — lebih longgar karena sekarang disimpan di Supabase Storage, bukan base64 di database
+const EVIDENCE_BUCKET='evidence';
+async function uploadEvidenceToStorage(blob,filename,mime){
+  if(!sb)return null;
+  try{
+    const safeName=filename.replace(/[^a-zA-Z0-9._-]/g,'_');
+    const path=`${(new Date()).toISOString().slice(0,10)}/${Date.now()}_${Math.random().toString(36).slice(2,8)}_${safeName}`;
+    const{error}=await sb.storage.from(EVIDENCE_BUCKET).upload(path,blob,{contentType:mime||blob.type||'application/octet-stream',upsert:false});
+    if(error)throw error;
+    const{data}=sb.storage.from(EVIDENCE_BUCKET).getPublicUrl(path);
+    return{url:data.publicUrl,path};
+  }catch(err){
+    console.error('Upload ke Supabase Storage gagal:',err);
+    return null;
+  }
+}
 function evidenceGetArr(hiddenId){
   const raw=document.getElementById(hiddenId)?.value;
   try{return raw?JSON.parse(raw):[]}catch{return []}
@@ -1993,8 +2012,10 @@ function evidenceRenderChips(hiddenId,listId){
   const list=document.getElementById(listId);if(!list)return;
   if(!arr.length){list.innerHTML='<div style="font-size:11px;color:var(--text3)">Belum ada file diupload</div>';return;}
   list.innerHTML=arr.map((it,i)=>{
-    const thumb=it.type==='foto'?`<img src="${it.data}" style="width:40px;height:40px;object-fit:cover;border-radius:6px;flex-shrink:0">`:`<div style="width:40px;height:40px;border-radius:6px;background:var(--surface2);display:flex;align-items:center;justify-content:center;color:var(--red);font-size:16px;flex-shrink:0"><i class="ti ti-file-type-pdf"></i></div>`;
-    return`<div style="display:flex;align-items:center;gap:8px;border:.5px solid var(--border2);border-radius:var(--radius);padding:6px 8px;max-width:230px">${thumb}<span style="font-size:11px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${it.name}">${it.name}</span><button type="button" onclick="evidenceRemove('${hiddenId}','${listId}',${i})" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:14px;flex-shrink:0"><i class="ti ti-x"></i></button></div>`;
+    const src=it.url||it.data;
+    const cloudTag=it.url?'<i class="ti ti-cloud-check" style="color:var(--green);font-size:11px" title="Tersimpan di Supabase Storage"></i>':'<i class="ti ti-device-floppy" style="color:var(--text3);font-size:11px" title="Tersimpan lokal saja"></i>';
+    const thumb=it.type==='foto'?`<img src="${src}" style="width:40px;height:40px;object-fit:cover;border-radius:6px;flex-shrink:0">`:`<div style="width:40px;height:40px;border-radius:6px;background:var(--surface2);display:flex;align-items:center;justify-content:center;color:var(--red);font-size:16px;flex-shrink:0"><i class="ti ti-file-type-pdf"></i></div>`;
+    return`<div style="display:flex;align-items:center;gap:8px;border:.5px solid var(--border2);border-radius:var(--radius);padding:6px 8px;max-width:230px">${thumb}<span style="font-size:11px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${it.name}">${it.name}</span>${cloudTag}<button type="button" onclick="evidenceRemove('${hiddenId}','${listId}',${i})" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:14px;flex-shrink:0"><i class="ti ti-x"></i></button></div>`;
   }).join('');
 }
 function evidenceRemove(hiddenId,listId,idx){
@@ -2027,25 +2048,43 @@ function compressEvidenceImage(file,maxDim,quality){
     reader.readAsDataURL(file);
   });
 }
-function handleEvidenceUpload(evt,hiddenId,listId,type){
+function readFileAsDataURL(file){
+  return new Promise((resolve,reject)=>{
+    const reader=new FileReader();
+    reader.onload=e=>resolve(e.target.result);
+    reader.onerror=reject;
+    reader.readAsDataURL(file);
+  });
+}
+async function handleEvidenceUpload(evt,hiddenId,listId,type){
   const files=Array.from(evt.target.files||[]);
   if(!files.length)return;
-  let remaining=files.length;
-  const arr=evidenceGetArr(hiddenId);
-  const finish=()=>{remaining--;if(remaining<=0){evidenceSetArr(hiddenId,arr);evidenceRenderChips(hiddenId,listId)}};
-  files.forEach(file=>{
-    if(file.size>EVIDENCE_MAX_SIZE){toast(`${file.name} terlalu besar (maks 3MB)`,'error');finish();return}
-    if(type==='foto'){
-      // foto dikompres & diperkecil dulu supaya hemat ruang penyimpanan
-      compressEvidenceImage(file).then(dataUrl=>{arr.push({type,name:file.name,data:dataUrl});finish()}).catch(()=>{toast(`Gagal memproses ${file.name}`,'error');finish()});
-    }else{
-      const reader=new FileReader();
-      reader.onload=e=>{arr.push({type,name:file.name,data:e.target.result});finish()};
-      reader.onerror=()=>{toast(`Gagal membaca ${file.name}`,'error');finish()};
-      reader.readAsDataURL(file);
-    }
-  });
   evt.target.value='';
+  const arr=evidenceGetArr(hiddenId);
+  for(const file of files){
+    if(file.size>EVIDENCE_MAX_SIZE){toast(`${file.name} terlalu besar (maks 8MB)`,'error');continue}
+    try{
+      let blob,mime,dataUrlFallback;
+      if(type==='foto'){
+        const dataUrl=await compressEvidenceImage(file);
+        blob=dataURLtoBlob(dataUrl);mime='image/jpeg';dataUrlFallback=dataUrl;
+      }else{
+        blob=file;mime=file.type||'application/pdf';dataUrlFallback=await readFileAsDataURL(file);
+      }
+      const uploaded=await uploadEvidenceToStorage(blob,file.name,mime);
+      if(uploaded){
+        arr.push({type,name:file.name,url:uploaded.url,path:uploaded.path});
+      }else{
+        arr.push({type,name:file.name,data:dataUrlFallback});
+        toast(`${file.name} disimpan lokal saja (Supabase Storage belum siap / gagal upload)`,'error');
+      }
+    }catch(err){
+      console.error(err);
+      toast(`Gagal memproses ${file.name}`,'error');
+    }
+    evidenceSetArr(hiddenId,arr);
+    evidenceRenderChips(hiddenId,listId);
+  }
 }
 function dataURLtoBlob(dataurl){
   const arr=dataurl.split(',');
@@ -2066,12 +2105,13 @@ function openEvidenceModal(evidenceArr,title){
   }else{
     const srcColor={sp:'#eab308',teguran:'#a855f7',denda:'#f97316'};
     body.innerHTML=evidenceArr.map((it,i)=>{
+      const src=it.url||it.data;
       const safeName=it.name||(it.type==='foto'?'Foto Bukti':'Dokumen PDF');
       const badge=it._sourceLabel?`<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px"><span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:${srcColor[it._source]||'var(--surface2)'}22;color:${srcColor[it._source]||'var(--text2)'}">${it._sourceLabel}</span>${it._date?`<span style="font-size:10px;color:var(--text3)">${it._date}</span>`:''}</div>`:'';
       if(it.type==='foto'){
-        return`<div style="border:.5px solid var(--border);border-radius:var(--radius);padding:8px">${badge}<div style="display:flex;gap:10px;align-items:center"><img src="${it.data}" style="width:56px;height:56px;object-fit:cover;border-radius:6px;cursor:pointer;flex-shrink:0" onclick="toggleEvidencePreview(${i})"><div style="flex:1;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${safeName}</div><button class="btn-detail" onclick="toggleEvidencePreview(${i})" title="Lihat"><i class="ti ti-eye"></i></button><a class="btn-detail" href="${it.data}" download="${safeName}" title="Unduh"><i class="ti ti-download"></i></a></div><div id="evPreview-${i}" style="display:none;margin-top:10px"><img src="${it.data}" style="max-width:100%;max-height:420px;border-radius:8px;display:block;margin:0 auto"></div></div>`;
+        return`<div style="border:.5px solid var(--border);border-radius:var(--radius);padding:8px">${badge}<div style="display:flex;gap:10px;align-items:center"><img src="${src}" style="width:56px;height:56px;object-fit:cover;border-radius:6px;cursor:pointer;flex-shrink:0" onclick="toggleEvidencePreview(${i})"><div style="flex:1;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${safeName}</div><button class="btn-detail" onclick="toggleEvidencePreview(${i})" title="Lihat"><i class="ti ti-eye"></i></button><a class="btn-detail" href="${src}" download="${safeName}" target="_blank" title="Unduh"><i class="ti ti-download"></i></a></div><div id="evPreview-${i}" style="display:none;margin-top:10px"><img src="${src}" style="max-width:100%;max-height:420px;border-radius:8px;display:block;margin:0 auto"></div></div>`;
       }
-      return`<div style="border:.5px solid var(--border);border-radius:var(--radius);padding:8px">${badge}<div style="display:flex;gap:10px;align-items:center"><div style="width:56px;height:56px;border-radius:6px;background:var(--surface2);display:flex;align-items:center;justify-content:center;color:var(--red);font-size:22px;flex-shrink:0"><i class="ti ti-file-type-pdf"></i></div><div style="flex:1;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${safeName}</div><button class="btn-detail" onclick="toggleEvidencePreview(${i})" title="Review PDF"><i class="ti ti-eye"></i> Review</button><a class="btn-detail" href="${it.data}" download="${safeName}" title="Unduh"><i class="ti ti-download"></i></a></div><div id="evPreview-${i}" style="display:none;margin-top:10px"><iframe id="evFrame-${i}" style="width:100%;height:380px;border:none;border-radius:8px;background:#fff" title="${safeName}"></iframe></div></div>`;
+      return`<div style="border:.5px solid var(--border);border-radius:var(--radius);padding:8px">${badge}<div style="display:flex;gap:10px;align-items:center"><div style="width:56px;height:56px;border-radius:6px;background:var(--surface2);display:flex;align-items:center;justify-content:center;color:var(--red);font-size:22px;flex-shrink:0"><i class="ti ti-file-type-pdf"></i></div><div style="flex:1;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${safeName}</div><button class="btn-detail" onclick="toggleEvidencePreview(${i})" title="Review PDF"><i class="ti ti-eye"></i> Review</button><a class="btn-detail" href="${src}" download="${safeName}" target="_blank" title="Unduh"><i class="ti ti-download"></i></a></div><div id="evPreview-${i}" style="display:none;margin-top:10px"><iframe id="evFrame-${i}" style="width:100%;height:380px;border:none;border-radius:8px;background:#fff" title="${safeName}"></iframe></div></div>`;
     }).join('');
   }
   document.getElementById('evidenceModalOverlay').classList.add('open');
@@ -2085,11 +2125,15 @@ function toggleEvidencePreview(i){
   if(!it||it.type!=='pdf')return;
   const frame=document.getElementById('evFrame-'+i);
   if(frame&&!frame.src){
-    try{
-      const blob=dataURLtoBlob(it.data);
-      frame.src=URL.createObjectURL(blob);
-    }catch{
-      wrap.innerHTML='<div style="padding:10px;font-size:12px;color:var(--text3)">Pratinjau tidak dapat dimuat di sini. Gunakan tombol unduh untuk membuka file PDF.</div>';
+    if(it.url){
+      frame.src=it.url;
+    }else if(it.data){
+      try{
+        const blob=dataURLtoBlob(it.data);
+        frame.src=URL.createObjectURL(blob);
+      }catch{
+        wrap.innerHTML='<div style="padding:10px;font-size:12px;color:var(--text3)">Pratinjau tidak dapat dimuat di sini. Gunakan tombol unduh untuk membuka file PDF.</div>';
+      }
     }
   }
 }
