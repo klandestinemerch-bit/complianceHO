@@ -425,6 +425,7 @@ body.login-active{overflow:hidden;height:100vh}
     <button class="nav-item" onclick="showPage('teguran',this)"><i class="ti ti-alert-circle"></i>Teguran Peringatan</button>
     <button class="nav-item" onclick="showPage('denda',this)"><i class="ti ti-receipt-dollar"></i>Denda Pelanggaran</button>
     <button class="nav-item" onclick="showPage('berhenti',this)"><i class="ti ti-user-off"></i>Diberhentikan</button>
+    <button class="nav-item" onclick="showPage('surat',this)"><i class="ti ti-mail"></i>Surat Menyurat</button>
   </div>
   <div class="nav-section" style="margin-top:1rem;padding-top:1rem;border-top:.5px solid var(--border)">
     <button class="nav-item admin-only" onclick="showPage('pengaturan',this)"><i class="ti ti-settings"></i>Pengaturan</button>
@@ -736,6 +737,15 @@ body.login-active{overflow:hidden;height:100vh}
 
   <!-- SP PERFORMANCE -->
   <div id="page-sp" style="display:none">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:.6rem">
+      <div style="font-size:11px;color:var(--text3)" id="spPeriodNote"><i class="ti ti-calendar-stats"></i> Menampilkan data: <b id="spPeriodNoteLabel">Bulan Ini</b></div>
+      <div class="filter-row" style="margin:0;align-items:center">
+        <button class="filter-btn sp-period-filter active" id="spBtnBulanIni" onclick="setSpPeriod('bulan-ini',this)"><i class="ti ti-calendar"></i> Bulan Ini</button>
+        <button class="filter-btn sp-period-filter" id="spBtnSemua" onclick="setSpPeriod('semua',this)"><i class="ti ti-infinity"></i> Semua Waktu</button>
+        <input type="month" id="spMonthPicker" class="form-input" style="padding:6px 10px;font-size:12px;width:auto" onchange="setSpMonthPicked(this.value)" title="Pilih bulan & tahun tertentu">
+      </div>
+    </div>
+    <div id="spMonthChips" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:.8rem"></div>
     <div class="metrics-grid">
       <div class="mcard c-amber"><div class="mcard-lbl"><i class="ti ti-alert-triangle"></i>SP 1</div><div class="mcard-val" id="sp1-count">0</div></div>
       <div class="mcard c-red"><div class="mcard-lbl"><i class="ti ti-alert-triangle"></i>SP 2</div><div class="mcard-val" id="sp2-count">0</div></div>
@@ -832,6 +842,15 @@ body.login-active{overflow:hidden;height:100vh}
 
   <!-- DIBERHENTIKAN -->
   <div id="page-berhenti" style="display:none">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:.6rem">
+      <div style="font-size:11px;color:var(--text3)" id="bhPeriodNote"><i class="ti ti-calendar-stats"></i> Menampilkan data: <b id="bhPeriodNoteLabel">Bulan Ini</b></div>
+      <div class="filter-row" style="margin:0;align-items:center">
+        <button class="filter-btn bh-period-filter active" id="bhBtnBulanIni" onclick="setBhPeriod('bulan-ini',this)"><i class="ti ti-calendar"></i> Bulan Ini</button>
+        <button class="filter-btn bh-period-filter" id="bhBtnSemua" onclick="setBhPeriod('semua',this)"><i class="ti ti-infinity"></i> Semua Waktu</button>
+        <input type="month" id="bhMonthPicker" class="form-input" style="padding:6px 10px;font-size:12px;width:auto" onchange="setBhMonthPicked(this.value)" title="Pilih bulan & tahun tertentu">
+      </div>
+    </div>
+    <div id="bhMonthChips" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:.8rem"></div>
     <div class="metrics-grid">
       <div class="mcard c-red"><div class="mcard-lbl"><i class="ti ti-shield-x"></i>Fraud</div><div class="mcard-val" id="bh-fraud">0</div><div class="mcard-sub">Pemberhentian fraud</div></div>
       <div class="mcard c-amber"><div class="mcard-lbl"><i class="ti ti-trending-down"></i>Tidak Perform</div><div class="mcard-val" id="bh-perform">0</div><div class="mcard-sub">Performa buruk</div></div>
@@ -850,6 +869,37 @@ body.login-active{overflow:hidden;height:100vh}
         <table class="emp-table"><thead><tr><th>Tgl Berhenti</th><th>Karyawan</th><th>Divisi</th><th>Jabatan</th><th>Alasan</th><th style="text-align:center">Keterangan</th><th>Diproses Oleh</th><th>Aksi</th></tr></thead><tbody id="berhentiBody"></tbody></table>
       </div>
       <div id="berhentiEmpty" class="empty-state"><i class="ti ti-user-off"></i><p>Belum ada data pemberhentian.</p></div>
+    </div>
+  </div>
+
+  <!-- SURAT MENYURAT -->
+  <div id="page-surat" style="display:none">
+    <div class="metrics-grid">
+      <div class="mcard c-blue"><div class="mcard-lbl"><i class="ti ti-mail-forward"></i>Surat Masuk</div><div class="mcard-val" id="surat-masuk">0</div></div>
+      <div class="mcard c-green"><div class="mcard-lbl"><i class="ti ti-mail-fast"></i>Surat Keluar</div><div class="mcard-val" id="surat-keluar">0</div></div>
+      <div class="mcard c-amber"><div class="mcard-lbl"><i class="ti ti-files"></i>Total Surat</div><div class="mcard-val" id="surat-total">0</div></div>
+      <div class="mcard" style="border-color:var(--purple)"><div class="mcard-lbl" style="color:var(--purple)"><i class="ti ti-file-text"></i>Ada Dokumen</div><div class="mcard-val" id="surat-dok" style="color:var(--purple)">0</div></div>
+    </div>
+    <div class="card">
+      <div class="page-header">
+        <div class="card-title" style="margin-bottom:0"><i class="ti ti-mail"></i>Surat Menyurat</div>
+        <div class="page-header-actions">
+          <button class="btn-excel" onclick="exportExcelPage('surat')"><i class="ti ti-file-spreadsheet"></i>Export</button>
+          <button class="btn-add" onclick="openFormSurat()"><i class="ti ti-plus"></i>Tambah Surat</button>
+        </div>
+      </div>
+      <div style="overflow-x:auto;margin-top:1rem">
+        <table class="emp-table"><thead><tr>
+          <th class="th-sort" onclick="sortSuratTable('tgl')" style="cursor:pointer;user-select:none">Tanggal <i class="ti ti-arrows-sort" id="suratSortIcon-tgl" style="font-size:11px;opacity:.5;margin-left:2px"></i></th>
+          <th class="th-sort" onclick="sortSuratTable('nomor')" style="cursor:pointer;user-select:none">Nomor Surat <i class="ti ti-arrows-sort" id="suratSortIcon-nomor" style="font-size:11px;opacity:.5;margin-left:2px"></i></th>
+          <th class="th-sort" onclick="sortSuratTable('jenis')" style="cursor:pointer;user-select:none">Jenis <i class="ti ti-arrows-sort" id="suratSortIcon-jenis" style="font-size:11px;opacity:.5;margin-left:2px"></i></th>
+          <th>Perihal</th>
+          <th class="th-sort" onclick="sortSuratTable('tujuan')" style="cursor:pointer;user-select:none">Kepada / Dari <i class="ti ti-arrows-sort" id="suratSortIcon-tujuan" style="font-size:11px;opacity:.5;margin-left:2px"></i></th>
+          <th>Dokumen</th>
+          <th>Aksi</th>
+        </tr></thead><tbody id="suratMsBody"></tbody></table>
+      </div>
+      <div id="suratEmpty" class="empty-state"><i class="ti ti-mail"></i><p>Belum ada data surat menyurat.</p></div>
     </div>
   </div>
 
@@ -1496,6 +1546,36 @@ body.login-active{overflow:hidden;height:100vh}
   </div>
 </div>
 
+<!-- FORM: SURAT MENYURAT -->
+<div class="form-overlay" id="formSuratOverlay">
+  <div class="form-modal">
+    <div class="form-header"><h3><i class="ti ti-mail"></i><span id="formSuratTitle">Tambah Surat Menyurat</span></h3><button class="form-close-btn" onclick="closeFormSurat()"><i class="ti ti-x"></i></button></div>
+    <div class="form-body">
+      <input type="hidden" id="suratId">
+      <div class="form-grid">
+        <div class="form-group"><label class="form-label">Tanggal Surat *</label><input type="date" id="suratTgl" class="form-input"></div>
+        <div class="form-group"><label class="form-label">Nomor Surat *</label><input type="text" id="suratNomor" class="form-input" placeholder="Cth: 001/HRD-MF/VII/2026"></div>
+        <div class="form-group"><label class="form-label">Jenis Surat *</label><select id="suratJenis" class="form-select"><option value="Masuk">Surat Masuk</option><option value="Keluar">Surat Keluar</option></select></div>
+        <div class="form-group"><label class="form-label">Kepada / Dari *</label><input type="text" id="suratTujuan" class="form-input" placeholder="Cth: Dinas Ketenagakerjaan"></div>
+        <div class="form-group full"><label class="form-label">Perihal *</label><textarea id="suratPerihal" class="form-textarea" placeholder="Uraikan perihal / isi ringkas surat"></textarea></div>
+        <div class="form-group full">
+          <label class="form-label">Dokumen Surat (PDF/Foto) — Opsional</label>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
+            <button type="button" class="btn-print" onclick="document.getElementById('suratPdfInput').click()"><i class="ti ti-file-type-pdf"></i>Upload PDF</button>
+            <button type="button" class="btn-excel-import" onclick="document.getElementById('suratFotoInput').click()"><i class="ti ti-camera"></i>Upload Foto Scan</button>
+            <input type="file" id="suratPdfInput" accept="application/pdf" multiple style="display:none" onchange="handleEvidenceUpload(event,'suratDokumenData','suratDokumenList','pdf')">
+            <input type="file" id="suratFotoInput" accept="image/*" multiple style="display:none" onchange="handleEvidenceUpload(event,'suratDokumenData','suratDokumenList','foto')">
+          </div>
+          <div id="suratDokumenList" style="display:flex;gap:8px;flex-wrap:wrap"></div>
+          <input type="hidden" id="suratDokumenData">
+          <div style="font-size:10px;color:var(--text3);margin-top:6px">Maks 8MB per file. Dokumen tersimpan aman di Supabase Storage.</div>
+        </div>
+      </div>
+    </div>
+    <div class="form-footer"><button class="btn-cancel" onclick="closeFormSurat()">Batal</button><button class="btn-save" onclick="saveSurat()"><i class="ti ti-device-floppy"></i>Simpan</button></div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -1507,7 +1587,7 @@ body.login-active{overflow:hidden;height:100vh}
 // ============================================================
 const SUPABASE_URL='https://nwcgveuaareyqikzorkl.supabase.co';
 const SUPABASE_ANON_KEY='sb_publishable_IT2HDE3lfnEstBzqXoOOkw_9GRJCGEc';
-const DB_STORE_KEYS=['employees','kamus','produktivitas','performa','penampilan','kebersihan','sp','teguran','denda','berhenti'];
+const DB_STORE_KEYS=['employees','kamus','produktivitas','performa','penampilan','kebersihan','sp','teguran','denda','berhenti','surat'];
 let sb=null;
 try{
   if(window.supabase&&window.supabase.createClient){
@@ -1842,7 +1922,7 @@ function empSelectSync(selectId,inputId,dropId){
     drop.dataset.bound='1';
   }
 }
-function closeAll(){['formEmpOverlay','formKamusOverlay','formProdOverlay','formPerformaOverlay','formPenampilanOverlay','formKebersihanOverlay','formSPOverlay','formTeguranOverlay','formDendaOverlay','formBerhentiOverlay','listModalOverlay','evidenceModalOverlay','infoTextModalOverlay'].forEach(id=>document.getElementById(id)?.classList.remove('open'));closeModalDirect()}
+function closeAll(){['formEmpOverlay','formKamusOverlay','formProdOverlay','formPerformaOverlay','formPenampilanOverlay','formKebersihanOverlay','formSPOverlay','formTeguranOverlay','formDendaOverlay','formBerhentiOverlay','formSuratOverlay','listModalOverlay','evidenceModalOverlay','infoTextModalOverlay'].forEach(id=>document.getElementById(id)?.classList.remove('open'));closeModalDirect()}
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeAll()});
 
 function fmtJoin(d){if(!d)return '-';try{const dt=new Date(d);return dt.toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'})}catch{return d}}
@@ -1959,6 +2039,108 @@ function renderTegMonthChips(){
     return`<button onclick="setTegMonthPicked('${ym}')" style="cursor:pointer;border:.5px solid ${active?'var(--blue)':'var(--border2)'};background:${active?'var(--blue-bg)':'var(--surface2)'};color:${active?'var(--blue)':'var(--text2)'};border-radius:20px;padding:5px 12px;font-size:11px;font-weight:600;white-space:nowrap">${BULAN_ID[parseInt(m)-1].slice(0,3)} ${y} · ${list.length} teguran</button>`;
   }).join('');
 }
+
+// ============================================================
+// PERIODE / KALENDER BULAN — SP PERFORMANCE
+// ============================================================
+let spPeriod='bulan-ini';
+function spYM(dateStr){return dendaYM(dateStr)}
+function spMatchesPeriod(dateStr){
+  if(spPeriod==='semua')return true;
+  const ym=spYM(dateStr);if(!ym)return false;
+  if(spPeriod==='bulan-ini'){
+    const now=new Date();
+    return ym===`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  }
+  return ym===spPeriod;
+}
+function spPeriodLabel(){
+  if(spPeriod==='semua')return 'Semua Waktu';
+  if(spPeriod==='bulan-ini'){
+    const now=new Date();
+    return `${BULAN_ID[now.getMonth()]} ${now.getFullYear()} (Bulan Ini)`;
+  }
+  const[y,m]=spPeriod.split('-');
+  return `${BULAN_ID[parseInt(m)-1]} ${y}`;
+}
+function setSpPeriod(mode,btn){
+  spPeriod=mode;
+  document.querySelectorAll('.sp-period-filter').forEach(b=>b.classList.remove('active'));
+  if(btn)btn.classList.add('active');
+  const picker=document.getElementById('spMonthPicker');if(picker)picker.value='';
+  renderSPTable();updateMetrics();renderSpMonthChips();
+}
+function setSpMonthPicked(value){
+  if(!value)return;
+  spPeriod=value;
+  document.querySelectorAll('.sp-period-filter').forEach(b=>b.classList.remove('active'));
+  renderSPTable();updateMetrics();renderSpMonthChips();
+}
+function renderSpMonthChips(){
+  const wrap=document.getElementById('spMonthChips');if(!wrap)return;
+  const recs=DB.get('sp');
+  const byMonth={};
+  recs.forEach(r=>{const ym=spYM(r.tgl);if(!ym)return;(byMonth[ym]=byMonth[ym]||[]).push(r)});
+  const months=Object.keys(byMonth).sort().reverse();
+  if(!months.length){wrap.innerHTML='';return}
+  wrap.innerHTML='<span style="font-size:10px;color:var(--text3);align-self:center;margin-right:2px">Per Bulan:</span>'+months.map(ym=>{
+    const[y,m]=ym.split('-');
+    const list=byMonth[ym];
+    const active=spPeriod===ym;
+    return`<button onclick="setSpMonthPicked('${ym}')" style="cursor:pointer;border:.5px solid ${active?'var(--blue)':'var(--border2)'};background:${active?'var(--blue-bg)':'var(--surface2)'};color:${active?'var(--blue)':'var(--text2)'};border-radius:20px;padding:5px 12px;font-size:11px;font-weight:600;white-space:nowrap">${BULAN_ID[parseInt(m)-1].slice(0,3)} ${y} · ${list.length} SP</button>`;
+  }).join('');
+}
+
+// ============================================================
+// PERIODE / KALENDER BULAN — DIBERHENTIKAN
+// ============================================================
+let bhPeriod='bulan-ini';
+function bhYM(dateStr){return dendaYM(dateStr)}
+function bhMatchesPeriod(dateStr){
+  if(bhPeriod==='semua')return true;
+  const ym=bhYM(dateStr);if(!ym)return false;
+  if(bhPeriod==='bulan-ini'){
+    const now=new Date();
+    return ym===`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  }
+  return ym===bhPeriod;
+}
+function bhPeriodLabel(){
+  if(bhPeriod==='semua')return 'Semua Waktu';
+  if(bhPeriod==='bulan-ini'){
+    const now=new Date();
+    return `${BULAN_ID[now.getMonth()]} ${now.getFullYear()} (Bulan Ini)`;
+  }
+  const[y,m]=bhPeriod.split('-');
+  return `${BULAN_ID[parseInt(m)-1]} ${y}`;
+}
+function setBhPeriod(mode,btn){
+  bhPeriod=mode;
+  document.querySelectorAll('.bh-period-filter').forEach(b=>b.classList.remove('active'));
+  if(btn)btn.classList.add('active');
+  const picker=document.getElementById('bhMonthPicker');if(picker)picker.value='';
+  renderBerhentiTable();updateMetrics();renderBhMonthChips();
+}
+function setBhMonthPicked(value){
+  if(!value)return;
+  bhPeriod=value;
+  document.querySelectorAll('.bh-period-filter').forEach(b=>b.classList.remove('active'));
+  renderBerhentiTable();updateMetrics();renderBhMonthChips();
+}
+function renderBhMonthChips(){
+  const wrap=document.getElementById('bhMonthChips');if(!wrap)return;
+  const recs=DB.get('berhenti');
+  const byMonth={};
+  recs.forEach(r=>{const ym=bhYM(r.tgl);if(!ym)return;(byMonth[ym]=byMonth[ym]||[]).push(r)});
+  const months=Object.keys(byMonth).sort().reverse();
+  if(!months.length){wrap.innerHTML='';return}
+  wrap.innerHTML='<span style="font-size:10px;color:var(--text3);align-self:center;margin-right:2px">Per Bulan:</span>'+months.map(ym=>{
+    const[y,m]=ym.split('-');
+    const list=byMonth[ym];
+    const active=bhPeriod===ym;
+    return`<button onclick="setBhMonthPicked('${ym}')" style="cursor:pointer;border:.5px solid ${active?'var(--blue)':'var(--border2)'};background:${active?'var(--blue-bg)':'var(--surface2)'};color:${active?'var(--blue)':'var(--text2)'};border-radius:20px;padding:5px 12px;font-size:11px;font-weight:600;white-space:nowrap">${BULAN_ID[parseInt(m)-1].slice(0,3)} ${y} · ${list.length} orang</button>`;
+  }).join('');
+}
 function updateMetrics(){
   autoLinkProduktivitas();
   const emps=DB.get('employees').filter(isEmpActive);
@@ -1974,11 +2156,19 @@ function updateMetrics(){
   s('prod-ma-low',prods.filter(r=>(parseFloat(r.ma)||0)<85).length);
   s('prod-call-count',prods.filter(r=>(parseFloat(r.ma)||0)<85).length);
   const sps=DB.get('sp');
-  s('sp1-count',sps.filter(x=>x.level==='SP 1').length);s('sp2-count',sps.filter(x=>x.level==='SP 2').length);s('sp3-count',sps.filter(x=>x.level==='SP 3').length);s('sp-total',sps.length);
+  const spScope=sps.filter(x=>spMatchesPeriod(x.tgl));
+  s('sp1-count',spScope.filter(x=>x.level==='SP 1').length);s('sp2-count',spScope.filter(x=>x.level==='SP 2').length);s('sp3-count',spScope.filter(x=>x.level==='SP 3').length);s('sp-total',spScope.length);
+  s('spPeriodNoteLabel',spPeriodLabel());
   const tegs=DB.get('teguran');
-  s('teg-lisan',tegs.filter(x=>x.jenis==='Teguran Lisan').length);s('teg-tulis',tegs.filter(x=>x.jenis==='Teguran Tertulis').length);s('teg-total',tegs.length);s('teg-selesai',tegs.filter(x=>x.status==='Selesai').length);
+  const tegScope=tegs.filter(x=>tegMatchesPeriod(x.tgl));
+  s('teg-lisan',tegScope.filter(x=>x.jenis==='Teguran Lisan').length);s('teg-tulis',tegScope.filter(x=>x.jenis==='Teguran Tertulis').length);s('teg-total',tegScope.length);s('teg-selesai',tegScope.filter(x=>x.status==='Selesai').length);
+  s('tegPeriodNoteLabel',tegPeriodLabel());
   const bhs=DB.get('berhenti');
-  s('bh-fraud',bhs.filter(x=>x.alasan==='Fraud').length);s('bh-perform',bhs.filter(x=>x.alasan==='Tidak Perform').length);s('bh-resign',bhs.filter(x=>x.alasan==='Resign').length);s('bh-total',bhs.length);
+  const bhScope=bhs.filter(x=>bhMatchesPeriod(x.tgl));
+  s('bh-fraud',bhScope.filter(x=>x.alasan==='Fraud').length);s('bh-perform',bhScope.filter(x=>x.alasan==='Tidak Perform').length);s('bh-resign',bhScope.filter(x=>x.alasan==='Resign').length);s('bh-total',bhScope.length);
+  s('bhPeriodNoteLabel',bhPeriodLabel());
+  const surats=DB.get('surat');
+  s('surat-masuk',surats.filter(x=>x.jenis==='Masuk').length);s('surat-keluar',surats.filter(x=>x.jenis==='Keluar').length);s('surat-total',surats.length);s('surat-dok',surats.filter(x=>x.evidence&&x.evidence.length).length);
   const dendas=DB.get('denda');
   const dendaScope=dendas.filter(x=>dendaMatchesPeriod(x.tgl));
   const sumLevel=(lvl)=>dendaScope.filter(x=>x.level===lvl).reduce((a,x)=>a+(parseInt(x.nominal)||0),0);
@@ -2209,6 +2399,11 @@ function getCombinedEvidenceCount(empId,fallbackEvidence){
 function openEvidenceModalById(store,id){
   const recs=DB.get(store);
   const r=recs.find(x=>String(x.id)===String(id));if(!r)return;
+  if(store==='surat'){
+    const combined=(r.evidence||[]).map(ev=>({...ev,_source:'surat',_sourceLabel:'Surat Menyurat',_date:r.tgl||''}));
+    openEvidenceModal(combined,`Dokumen Surat — ${r.nomor||'-'}`);
+    return;
+  }
   const emps=DB.get('employees');
   const e=r.empId?emps.find(x=>x.id===parseInt(r.empId)):null;
   const nama=e?e.name:(r.empName||'-');
@@ -2616,8 +2811,10 @@ function renderKebersihanTable(){
 }
 
 function renderSPTable(){
-  const recs=DB.get('sp');const emps=DB.get('employees');const tb=document.getElementById('spBody');const em=document.getElementById('spEmpty');if(!tb)return;
-  if(!recs.length){tb.innerHTML='';if(em)em.style.display='block';return}if(em)em.style.display='none';
+  const all=DB.get('sp');const emps=DB.get('employees');const tb=document.getElementById('spBody');const em=document.getElementById('spEmpty');if(!tb)return;
+  const recs=all.filter(r=>spMatchesPeriod(r.tgl));
+  renderSpMonthChips();
+  if(!recs.length){tb.innerHTML='';if(em){em.style.display='block';const p=em.querySelector('p');if(p)p.textContent=all.length?`Tidak ada data SP untuk ${spPeriodLabel()}`:'Belum ada data'}return}if(em)em.style.display='none';
   tb.innerHTML=[...recs].reverse().map(r=>{const e=emps.find(x=>x.id===parseInt(r.empId));const lc=r.level==='SP 1'?'sp-1':r.level==='SP 2'?'sp-2':'sp-3';const sc2=r.status==='Aktif'?'s-alpha':r.status==='Selesai'?'s-hadir':'s-izin';const evCount=getCombinedEvidenceCount(r.empId,r.evidence);const evBtn=`<button class="btn-detail" style="margin-right:6px" title="Lihat Semua Bukti Evidence Karyawan Ini" onclick="openEvidenceModalById('sp','${r.id}')"><i class="ti ti-paperclip"></i>${evCount?` ${evCount}`:''}</button>`;return`<tr><td style="font-size:12px">${r.tgl}</td><td><div class="emp-name">${e?e.name:'-'}</div><div class="emp-role" style="font-size:11px">${e?e.div:''}</div></td><td style="font-size:12px;color:var(--text2)">${e?e.div:'-'}</td><td><span class="score-pill ${lc}">${r.level}</span></td><td style="text-align:center"><button class="btn-detail" title="Lihat Alasan SP" onclick="openInfoTextById('sp','${r.id}','alasan','Alasan SP')"><i class="ti ti-info-circle"></i></button></td><td style="font-size:12px">${r.oleh||'-'}</td><td style="font-size:12px">${r.sampai||'-'}</td><td><span class="status-pill ${sc2}">${r.status}</span></td><td>${evBtn}<button class="btn-detail btn-edit-restricted" style="margin-right:6px" onclick="openFormSP('${r.id}')"><i class="ti ti-edit"></i></button><button class="btn-del" onclick="deleteRecord('sp','${r.id}',()=>{renderSPTable();updateMetrics()})"><i class="ti ti-trash"></i></button></td></tr>`}).join('');
   updateMetrics();
 }
@@ -2657,8 +2854,10 @@ function sortTeguranList(recs,emps){
   return arr;
 }
 function renderTeguranTable(){
-  const recs=DB.get('teguran');const emps=DB.get('employees');const tb=document.getElementById('teguranBody');const em=document.getElementById('teguranEmpty');if(!tb)return;
-  if(!recs.length){tb.innerHTML='';if(em)em.style.display='block';updateTegSortIcons();return}if(em)em.style.display='none';
+  const all=DB.get('teguran');const emps=DB.get('employees');const tb=document.getElementById('teguranBody');const em=document.getElementById('teguranEmpty');if(!tb)return;
+  const recs=all.filter(r=>tegMatchesPeriod(r.tgl));
+  renderTegMonthChips();
+  if(!recs.length){tb.innerHTML='';if(em){em.style.display='block';const p=em.querySelector('p');if(p)p.textContent=all.length?`Tidak ada data teguran untuk ${tegPeriodLabel()}`:'Belum ada data'}updateTegSortIcons();return}if(em)em.style.display='none';
   const sorted=tegSortKey?sortTeguranList(recs,emps):[...recs].reverse();
   updateTegSortIcons();
   tb.innerHTML=sorted.map(r=>{const e=emps.find(x=>x.id===parseInt(r.empId));const jc=r.jenis==='Teguran Lisan'?'sp-1':'sp-2';const sc2=r.status==='Selesai'?'s-hadir':'s-izin';const evCount=getCombinedEvidenceCount(r.empId,r.evidence);const evBtn=`<button class="btn-detail" style="margin-right:6px;position:relative" title="Lihat Semua Bukti Evidence Karyawan Ini" onclick="openEvidenceModalById('teguran','${r.id}')"><i class="ti ti-paperclip"></i>${evCount?` ${evCount}`:''}</button>`;return`<tr><td style="font-size:12px">${r.tgl}</td><td><div class="emp-name">${e?e.name:'-'}</div></td><td style="font-size:12px;color:var(--text2)">${e?e.div:'-'}</td><td><span class="score-pill ${jc}">${r.jenis}</span></td><td style="text-align:center"><button class="btn-detail" title="Lihat Keterangan Pelanggaran" onclick="openInfoTextById('teguran','${r.id}','alasan','Keterangan Pelanggaran')"><i class="ti ti-info-circle"></i></button></td><td style="font-size:12px">${r.oleh||'-'}</td><td><span class="status-pill ${sc2}">${r.status}</span></td><td>${evBtn}<button class="btn-detail btn-edit-restricted" style="margin-right:6px" onclick="openFormTeguran('${r.id}')"><i class="ti ti-edit"></i></button><button class="btn-del" onclick="deleteRecord('teguran','${r.id}',()=>{renderTeguranTable();updateMetrics()})"><i class="ti ti-trash"></i></button></td></tr>`}).join('');
@@ -2734,8 +2933,10 @@ function renderDendaTable(){
 }
 
 function renderBerhentiTable(){
-  const recs=DB.get('berhenti');const emps=DB.get('employees');const tb=document.getElementById('berhentiBody');const em=document.getElementById('berhentiEmpty');if(!tb)return;
-  if(!recs.length){tb.innerHTML='';if(em)em.style.display='block';return}if(em)em.style.display='none';
+  const all=DB.get('berhenti');const emps=DB.get('employees');const tb=document.getElementById('berhentiBody');const em=document.getElementById('berhentiEmpty');if(!tb)return;
+  const recs=all.filter(r=>bhMatchesPeriod(r.tgl));
+  renderBhMonthChips();
+  if(!recs.length){tb.innerHTML='';if(em){em.style.display='block';const p=em.querySelector('p');if(p)p.textContent=all.length?`Tidak ada data untuk ${bhPeriodLabel()}`:'Belum ada data'}return}if(em)em.style.display='none';
   const alC={Fraud:'al-fraud','Tidak Perform':'al-perform',Resign:'al-resign',Lainnya:'al-other'};
   tb.innerHTML=[...recs].reverse().map(r=>{const e=emps.find(x=>x.id===parseInt(r.empId));return`<tr><td style="font-size:12px">${r.tgl}</td><td><div class="emp-info">${e?av(e):'<div class="avatar" style="background:var(--surface2)">?</div>'}<div><div class="emp-name">${e?e.name:r.empName||'-'}</div></div></div></td><td style="font-size:12px;color:var(--text2)">${e?e.div:'-'}</td><td style="font-size:12px">${e?e.role:'-'}</td><td><span class="alasan-pill ${alC[r.alasan]||'al-other'}">${r.alasan}</span></td><td style="text-align:center"><button class="btn-detail" title="Lihat Keterangan" onclick="openInfoTextById('berhenti','${r.id}','ket','Keterangan Pemberhentian')"><i class="ti ti-info-circle"></i></button></td><td style="font-size:12px">${r.oleh||'-'}</td><td><button class="btn-detail btn-edit-restricted" style="margin-right:6px" onclick="openFormBerhenti('${r.id}')"><i class="ti ti-edit"></i></button><button class="btn-del" onclick="deleteRecord('berhenti','${r.id}',()=>{renderBerhentiTable();updateMetrics()})"><i class="ti ti-trash"></i></button></td></tr>`}).join('');
   updateMetrics();
@@ -2989,6 +3190,83 @@ function saveBerhenti(){
 }
 
 // ============================================================
+// SURAT MENYURAT (berbasis dokumen — PDF/Foto scan)
+// ============================================================
+let suratMsSortKey=null, suratMsSortDir=1;
+function sortSuratTable(key){
+  if(suratMsSortKey===key){suratMsSortDir*=-1}else{suratMsSortKey=key;suratMsSortDir=1}
+  renderSuratTable();
+}
+function updateSuratMsSortIcons(){
+  ['tgl','nomor','jenis','tujuan'].forEach(k=>{
+    const icon=document.getElementById('suratSortIcon-'+k);if(!icon)return;
+    if(suratMsSortKey===k){
+      icon.className='ti ti-arrow-'+(suratMsSortDir===1?'up':'down');
+      icon.style.opacity='1';icon.style.color='var(--blue)';
+    }else{
+      icon.className='ti ti-arrows-sort';icon.style.opacity='.5';icon.style.color='';
+    }
+  });
+}
+function sortSuratMsList(recs){
+  if(!suratMsSortKey)return recs;
+  const arr=recs.slice();
+  arr.sort((a,b)=>{
+    let av2=(a[suratMsSortKey]||'').toString().toLowerCase(),bv2=(b[suratMsSortKey]||'').toString().toLowerCase();
+    if(av2<bv2)return -1*suratMsSortDir;
+    if(av2>bv2)return 1*suratMsSortDir;
+    return 0;
+  });
+  return arr;
+}
+function openFormSurat(id){
+  document.getElementById('suratId').value=id||'';
+  if(id){
+    const r=DB.get('surat').find(x=>String(x.id)===String(id));if(!r)return;
+    document.getElementById('formSuratTitle').textContent='Edit Surat Menyurat';
+    document.getElementById('suratTgl').value=r.tgl||'';
+    document.getElementById('suratNomor').value=r.nomor||'';
+    document.getElementById('suratJenis').value=r.jenis||'Masuk';
+    document.getElementById('suratTujuan').value=r.tujuan||'';
+    document.getElementById('suratPerihal').value=r.perihal||'';
+    evidenceSetArr('suratDokumenData',r.evidence||[]);
+  }else{
+    document.getElementById('formSuratTitle').textContent='Tambah Surat Menyurat';
+    document.getElementById('suratTgl').value=todayStr();
+    ['suratNomor','suratTujuan','suratPerihal'].forEach(fid=>document.getElementById(fid).value='');
+    document.getElementById('suratJenis').value='Masuk';
+    evidenceSetArr('suratDokumenData',[]);
+  }
+  evidenceRenderChips('suratDokumenData','suratDokumenList');
+  document.getElementById('formSuratOverlay').classList.add('open');
+}
+function closeFormSurat(){document.getElementById('formSuratOverlay').classList.remove('open')}
+function saveSurat(){
+  const id=val('suratId');
+  const tgl=val('suratTgl'),nomor=val('suratNomor').trim(),perihal=val('suratPerihal').trim(),tujuan=val('suratTujuan').trim();
+  if(!tgl||!nomor||!perihal||!tujuan){toast('Tanggal, Nomor Surat, Kepada/Dari & Perihal wajib!','error');return}
+  const d={tgl,nomor,jenis:val('suratJenis'),tujuan,perihal,evidence:evidenceGetArr('suratDokumenData')};
+  const recs=DB.get('surat');
+  if(id){const i=recs.findIndex(x=>String(x.id)===String(id));if(i>=0)recs[i]={...recs[i],...d}}
+  else{recs.push({id:Date.now().toString(),...d})}
+  if(!DB.set('surat',recs))return;
+  closeFormSurat();renderSuratTable();updateMetrics();toast(id?'Surat diperbarui!':'Surat disimpan!');
+}
+function renderSuratTable(){
+  const recs=DB.get('surat');const tb=document.getElementById('suratMsBody');const em=document.getElementById('suratEmpty');if(!tb)return;
+  if(!recs.length){tb.innerHTML='';if(em)em.style.display='block';updateSuratMsSortIcons();return}if(em)em.style.display='none';
+  const sorted=suratMsSortKey?sortSuratMsList(recs):[...recs].reverse();
+  updateSuratMsSortIcons();
+  tb.innerHTML=sorted.map(r=>{
+    const jc=r.jenis==='Masuk'?'s-hadir':'s-alpha';
+    const dokCount=(r.evidence||[]).length;
+    const dokBtn=`<button class="btn-detail" title="Lihat Dokumen Surat" onclick="openEvidenceModalById('surat','${r.id}')"><i class="ti ti-paperclip"></i>${dokCount?` ${dokCount}`:''}</button>`;
+    return`<tr><td style="font-size:12px">${r.tgl}</td><td style="font-size:12px;font-weight:600">${r.nomor}</td><td><span class="status-pill ${jc}">${r.jenis==='Masuk'?'Surat Masuk':'Surat Keluar'}</span></td><td style="font-size:12px;max-width:200px;color:var(--text2)">${r.perihal}</td><td style="font-size:12px;color:var(--text2)">${r.tujuan}</td><td>${dokBtn}</td><td><button class="btn-detail btn-edit-restricted" style="margin-right:6px" onclick="openFormSurat('${r.id}')"><i class="ti ti-edit"></i></button><button class="btn-del" onclick="deleteRecord('surat','${r.id}',()=>{renderSuratTable();updateMetrics()})"><i class="ti ti-trash"></i></button></td></tr>`;
+  }).join('');
+  updateMetrics();
+}
+
+// ============================================================
 // SURAT PANGGILAN
 // ============================================================
 function openSuratPanggilan(){
@@ -3045,8 +3323,8 @@ function closeModalDirect(){document.getElementById('modalOverlay').classList.re
 // ============================================================
 // NAVIGASI
 // ============================================================
-const allPages=['dashboard','karyawan','kamus','performa','produktivitas','penampilan','kebersihan','sp','teguran','denda','berhenti','pengaturan','logout'];
-const pageTitles={dashboard:'Dashboard Monitoring SDM',karyawan:'Manajemen Data Karyawan',kamus:'Kamus Pelanggaran',performa:'Monitoring Performa',produktivitas:'Monitoring Produktivitas',penampilan:'Laporan Temuan Penampilan',kebersihan:'Monitoring Kebersihan',sp:'Laporan SP Performance',teguran:'Laporan Teguran & Peringatan',denda:'Laporan Denda Pelanggaran',berhenti:'Laporan Karyawan Diberhentikan',pengaturan:'Pengaturan Sistem',logout:'Keluar'};
+const allPages=['dashboard','karyawan','kamus','performa','produktivitas','penampilan','kebersihan','sp','teguran','denda','berhenti','surat','pengaturan','logout'];
+const pageTitles={dashboard:'Dashboard Monitoring SDM',karyawan:'Manajemen Data Karyawan',kamus:'Kamus Pelanggaran',performa:'Monitoring Performa',produktivitas:'Monitoring Produktivitas',penampilan:'Laporan Temuan Penampilan',kebersihan:'Monitoring Kebersihan',sp:'Laporan SP Performance',teguran:'Laporan Teguran & Peringatan',denda:'Laporan Denda Pelanggaran',berhenti:'Laporan Karyawan Diberhentikan',surat:'Surat Menyurat',pengaturan:'Pengaturan Sistem',logout:'Keluar'};
 function showPage(p,btn){
   if(p==='pengaturan'&&currentRole==='user'){
     toast('Akses Pengaturan hanya untuk Admin.','error');
@@ -3066,6 +3344,7 @@ function showPage(p,btn){
   if(p==='teguran')renderTeguranTable();
   if(p==='denda')renderDendaTable();
   if(p==='berhenti')renderBerhentiTable();
+  if(p==='surat')renderSuratTable();
   if(p==='logout'){document.getElementById('logout-time').textContent='Sesi aktif: '+new Date().toLocaleTimeString('id-ID')}
   updateMetrics();
 }
@@ -3264,6 +3543,7 @@ function exportExcelPage(page){
   else if(page==='penampilan'){const d=DB.get('penampilan');rows=[['Tanggal','Nama','Nilai','Seragam','ID Card','Kebersihan','Sepatu','Rambut','Catatan'],...d.map(r=>{const e=emps.find(x=>x.id===r.empId);return[r.tgl,e?e.name:'-',r.nilai,r.seragam?'✓':'✗',r.idcard?'✓':'✗',r.kebersihan?'✓':'✗',r.sepatu?'✓':'✗',r.rambut?'✓':'✗',r.catatan||'']})];name='Penampilan'}
   else if(page==='kamus'){const d=DB.get('kamus');rows=[['Bentuk Pelanggaran','Nominal Potongan','Sangsi Lain'],...d.map(r=>[r.bentuk,r.nominal,r.sangsi||''])];name='Kamus Pelanggaran'}
   else if(page==='kebersihan'){const d=DB.get('kebersihan');rows=[['Tanggal','Area','Meja','Ruang','Display','Lantai','Parkir','Nilai','PIC','Catatan'],...d.map(r=>{const pic=emps.find(x=>x.id===parseInt(r.pic));return[r.tgl,r.area,r.meja,r.ruang,r.display,r.lantai,r.parkir,r.nilai,pic?pic.name:'-',r.catatan||'']})];name='Kebersihan'}
+  else if(page==='surat'){const d=DB.get('surat');rows=[['Tanggal','Nomor Surat','Jenis','Kepada / Dari','Perihal','Jumlah Dokumen'],...d.map(r=>[r.tgl,r.nomor,r.jenis==='Masuk'?'Surat Masuk':'Surat Keluar',r.tujuan,r.perihal,(r.evidence||[]).length])];name='Surat Menyurat'}
   XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(rows),name);
   XLSX.writeFile(wb,'SDM-'+name+'-'+todayStr()+'.xlsx');
   toast('Excel '+name+' diunduh!','success');
@@ -3399,7 +3679,7 @@ function restoreDatabaseFromFile(evt){
   reader.onerror=()=>toast('Gagal membaca file!','error');
   reader.readAsText(file);
 }
-function clearAllData(){if(!confirm('Reset semua data?\nTindakan ini tidak bisa dibatalkan!'))return;['employees','kamus','produktivitas','performa','penampilan','kebersihan','sp','teguran','denda','berhenti'].forEach(k=>localStorage.removeItem('sdm_'+k));seedData();autoLinkProduktivitas();renderEmpTable('semua');renderEmpTable2();updateMetrics();toast('Data direset','error')}
+function clearAllData(){if(!confirm('Reset semua data?\nTindakan ini tidak bisa dibatalkan!'))return;['employees','kamus','produktivitas','performa','penampilan','kebersihan','sp','teguran','denda','berhenti','surat'].forEach(k=>localStorage.removeItem('sdm_'+k));seedData();autoLinkProduktivitas();renderEmpTable('semua');renderEmpTable2();updateMetrics();toast('Data direset','error')}
 
 
 // ============================================================
