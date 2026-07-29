@@ -759,6 +759,15 @@ body.login-active{overflow:hidden;height:100vh}
 
   <!-- TEGURAN -->
   <div id="page-teguran" style="display:none">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:.6rem">
+      <div style="font-size:11px;color:var(--text3)" id="tegPeriodNote"><i class="ti ti-calendar-stats"></i> Menampilkan data: <b id="tegPeriodNoteLabel">Bulan Ini</b></div>
+      <div class="filter-row" style="margin:0;align-items:center">
+        <button class="filter-btn teg-period-filter active" id="tegBtnBulanIni" onclick="setTegPeriod('bulan-ini',this)"><i class="ti ti-calendar"></i> Bulan Ini</button>
+        <button class="filter-btn teg-period-filter" id="tegBtnSemua" onclick="setTegPeriod('semua',this)"><i class="ti ti-infinity"></i> Semua Waktu</button>
+        <input type="month" id="tegMonthPicker" class="form-input" style="padding:6px 10px;font-size:12px;width:auto" onchange="setTegMonthPicked(this.value)" title="Pilih bulan & tahun tertentu">
+      </div>
+    </div>
+    <div id="tegMonthChips" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:.8rem"></div>
     <div class="metrics-grid">
       <div class="mcard c-amber"><div class="mcard-lbl"><i class="ti ti-alert-circle"></i>Teguran Lisan</div><div class="mcard-val" id="teg-lisan">0</div></div>
       <div class="mcard c-red"><div class="mcard-lbl"><i class="ti ti-file-alert"></i>Teguran Tertulis</div><div class="mcard-val" id="teg-tulis">0</div></div>
@@ -1896,6 +1905,58 @@ function renderDendaMonthChips(){
     const cnt=list.reduce((a,x)=>a+(parseInt(x.jumlah)||0),0);
     const active=dendaPeriod===ym;
     return`<button onclick="setDendaMonthPicked('${ym}')" style="cursor:pointer;border:.5px solid ${active?'var(--blue)':'var(--border2)'};background:${active?'var(--blue-bg)':'var(--surface2)'};color:${active?'var(--blue)':'var(--text2)'};border-radius:20px;padding:5px 12px;font-size:11px;font-weight:600;white-space:nowrap">${BULAN_ID[parseInt(m)-1].slice(0,3)} ${y} · ${cnt} temuan · ${fmtRp(total)}</button>`;
+  }).join('');
+}
+
+// ============================================================
+// PERIODE / KALENDER BULAN — LAPORAN TEGURAN & PERINGATAN
+// (Mengikuti pola yang sama seperti Denda Pelanggaran)
+// ============================================================
+let tegPeriod='bulan-ini'; // 'bulan-ini' | 'semua' | 'YYYY-MM'
+function tegYM(dateStr){return dendaYM(dateStr)}
+function tegMatchesPeriod(dateStr){
+  if(tegPeriod==='semua')return true;
+  const ym=tegYM(dateStr);if(!ym)return false;
+  if(tegPeriod==='bulan-ini'){
+    const now=new Date();
+    return ym===`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  }
+  return ym===tegPeriod;
+}
+function tegPeriodLabel(){
+  if(tegPeriod==='semua')return 'Semua Waktu';
+  if(tegPeriod==='bulan-ini'){
+    const now=new Date();
+    return `${BULAN_ID[now.getMonth()]} ${now.getFullYear()} (Bulan Ini)`;
+  }
+  const[y,m]=tegPeriod.split('-');
+  return `${BULAN_ID[parseInt(m)-1]} ${y}`;
+}
+function setTegPeriod(mode,btn){
+  tegPeriod=mode;
+  document.querySelectorAll('.teg-period-filter').forEach(b=>b.classList.remove('active'));
+  if(btn)btn.classList.add('active');
+  const picker=document.getElementById('tegMonthPicker');if(picker)picker.value='';
+  renderTeguranTable();updateMetrics();renderTegMonthChips();
+}
+function setTegMonthPicked(value){
+  if(!value)return;
+  tegPeriod=value;
+  document.querySelectorAll('.teg-period-filter').forEach(b=>b.classList.remove('active'));
+  renderTeguranTable();updateMetrics();renderTegMonthChips();
+}
+function renderTegMonthChips(){
+  const wrap=document.getElementById('tegMonthChips');if(!wrap)return;
+  const recs=DB.get('teguran');
+  const byMonth={};
+  recs.forEach(r=>{const ym=tegYM(r.tgl);if(!ym)return;(byMonth[ym]=byMonth[ym]||[]).push(r)});
+  const months=Object.keys(byMonth).sort().reverse();
+  if(!months.length){wrap.innerHTML='';return}
+  wrap.innerHTML='<span style="font-size:10px;color:var(--text3);align-self:center;margin-right:2px">Per Bulan:</span>'+months.map(ym=>{
+    const[y,m]=ym.split('-');
+    const list=byMonth[ym];
+    const active=tegPeriod===ym;
+    return`<button onclick="setTegMonthPicked('${ym}')" style="cursor:pointer;border:.5px solid ${active?'var(--blue)':'var(--border2)'};background:${active?'var(--blue-bg)':'var(--surface2)'};color:${active?'var(--blue)':'var(--text2)'};border-radius:20px;padding:5px 12px;font-size:11px;font-weight:600;white-space:nowrap">${BULAN_ID[parseInt(m)-1].slice(0,3)} ${y} · ${list.length} teguran</button>`;
   }).join('');
 }
 function updateMetrics(){
