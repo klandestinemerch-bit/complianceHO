@@ -276,7 +276,7 @@ html,body{height:100%}
 /* KOP */
 .surat-kop{display:flex;align-items:center;gap:16px;margin-bottom:6px}
 .surat-kop-logo{width:70px;height:70px;flex-shrink:0;display:flex;align-items:center;justify-content:center;border-radius:8px;overflow:hidden}
-.surat-kop-text{flex:1}
+.surat-kop-text{flex:1;text-align:center}
 .surat-kop-garis{border-bottom:3px double #000;margin-bottom:14px}
 /* BODY */
 .surat-body-wrap{outline:none;min-height:600px;font-family:'Times New Roman',Times,serif;font-size:12px;line-height:1.8;color:#000}
@@ -1236,6 +1236,11 @@ body.login-active{overflow:hidden;height:100vh}
         <option value="none">Tanpa Garis</option>
       </select>
       <input type="color" title="Warna garis kop" value="#1a1d23" id="kopGarisColor" onchange="updateKopGaris()" style="width:28px;height:28px;border:none;border-radius:4px;cursor:pointer;padding:2px">
+      <span style="width:1px;height:20px;background:rgba(255,255,255,.3);margin:0 2px"></span>
+      <button class="kop-btn" onclick="document.getElementById('ttdInput').click()"><i class="ti ti-signature"></i> Upload TTD</button>
+      <input type="file" id="ttdInput" accept="image/*" style="display:none" onchange="handleTtdUpload(event)">
+      <button class="kop-btn" id="btnSisipkanTtd" onclick="sisipkanTtd()" disabled title="Upload tanda tangan dulu, lalu klik di titik penandatanganan sebelum menekan tombol ini"><i class="ti ti-writing-sign"></i> Sisipkan TTD</button>
+      <button class="kop-btn" onclick="removeTtd()"><i class="ti ti-trash"></i> Hapus TTD</button>
     </div>
 
     <!-- SURAT PREVIEW (A4) -->
@@ -3250,12 +3255,6 @@ function renderSuratTable(){
 // ============================================================
 function closeSuratModal(e){if(e.target===document.getElementById('suratOverlay'))closeSuratDirect()}
 function closeSuratDirect(){document.getElementById('suratOverlay').classList.remove('open')}
-function printSurat(){
-  const toolbar=document.querySelector('.surat-editor-toolbar');const btnRow=document.querySelector('#suratOverlay .modal>div:first-child');
-  if(toolbar)toolbar.style.display='none';if(btnRow)btnRow.style.display='none';
-  window.print();
-  setTimeout(()=>{if(toolbar)toolbar.style.display='';if(btnRow)btnRow.style.display='';},1000);
-}
 
 // ============================================================
 // MODAL DETAIL
@@ -3661,6 +3660,37 @@ function removeKopLogo(){
     box.style.border='1.5px dashed #94a3b8';box.style.background='#f1f5f9';
   }
 }
+// ============================================================
+// UPLOAD & SISIPKAN TANDA TANGAN (TTD) ke surat
+// ============================================================
+function handleTtdUpload(evt){
+  const file=evt.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    window.__ttdDataUrl=e.target.result;
+    const st=DB.getObj('settings',{});
+    st.signatureData=e.target.result;
+    DB.setObj('settings',st);
+    const btn=document.getElementById('btnSisipkanTtd');if(btn)btn.disabled=false;
+    toast('Tanda tangan berhasil diupload! Klik di titik penandatanganan pada surat, lalu klik "Sisipkan TTD".');
+  };
+  reader.onerror=()=>{toast('Gagal membaca file tanda tangan','error')};
+  reader.readAsDataURL(file);evt.target.value='';
+}
+function sisipkanTtd(){
+  if(!window.__ttdDataUrl){toast('Upload tanda tangan terlebih dahulu!','error');return}
+  const body=document.getElementById('suratBody');
+  if(body)body.focus();
+  document.execCommand('insertHTML',false,`<img src="${window.__ttdDataUrl}" class="surat-ttd-img" style="max-width:110px;max-height:70px;object-fit:contain;display:block">`);
+}
+function removeTtd(){
+  window.__ttdDataUrl=null;
+  const st=DB.getObj('settings',{});
+  delete st.signatureData;
+  DB.setObj('settings',st);
+  const btn=document.getElementById('btnSisipkanTtd');if(btn)btn.disabled=true;
+  toast('Tanda tangan tersimpan sudah dihapus. (TTD yang sudah tersisip di teks surat tidak ikut terhapus otomatis, hapus manual jika perlu.)');
+}
 function updateKopLive(){
   const nama=document.getElementById('kopNamaInput')?.value||'M FLASH';
   const alamat=document.getElementById('kopAlamatInput')?.value||'Jakarta, Indonesia';
@@ -3690,14 +3720,6 @@ function addTableToSurat(){
 function addHRToSurat(){
   document.getElementById('suratBody').focus();
   document.execCommand('insertHTML',false,'<hr style="border:none;border-top:1px solid #000;margin:10px 0">');
-}
-function printSurat(){
-  // Temporarily show suratOverlay fullscreen for print
-  const overlay=document.getElementById('suratOverlay');
-  const prevDisplay=overlay.style.display;
-  overlay.style.display='flex';
-  window.print();
-  setTimeout(()=>{overlay.style.display=prevDisplay;},800);
 }
 // ============================================================
 // TEMPLATE SURAT (Panggilan & Teguran) — dipakai oleh editor surat
@@ -3740,7 +3762,7 @@ const SURAT_TEMPLATES={
         <p>Jakarta, ${now.getDate()} ${bln[now.getMonth()]} ${now.getFullYear()}</p>
         <p>Compliance Auditor</p>
         <p>PT. Madinah Grup Indonesia</p>
-        <br><br><br>
+        <br><br>
         <p><strong>( ________________________ )</strong></p>
       </div>`
   },
@@ -3779,8 +3801,8 @@ const SURAT_TEMPLATES={
       <p>Jakarta, ${now.getDate()} ${bln[now.getMonth()]} ${now.getFullYear()}</p>
       <br>
       <div style="display:flex;justify-content:space-between;margin-top:.5rem">
-        <div style="width:45%"><p>Dibuat oleh,</p><p>Compliance Auditor</p><br><br><br><p><strong>( Sapta Riyadi )</strong></p></div>
-        <div style="width:45%;text-align:center"><p>&nbsp;</p><p>Mflash</p><br><br><br><p><strong>( <span id="sp-nama-ttd">Nama Karyawan</span> )</strong></p></div>
+        <div style="width:45%"><p>Dibuat oleh,</p><p>Compliance Auditor</p><br><br><p><strong>( Sapta Riyadi )</strong></p></div>
+        <div style="width:45%;text-align:center"><p>&nbsp;</p><p>Mflash</p><br><br><p><strong>( <span id="sp-nama-ttd">Nama Karyawan</span> )</strong></p></div>
       </div>
       <br>
       <div style="font-size:11px">
@@ -3823,9 +3845,9 @@ const SURAT_TEMPLATES={
       <p><strong>PT Madinah Group Indonesia</strong></p>
       <br>
       <div style="display:flex;justify-content:space-between;margin-top:.5rem;text-align:center;font-size:12px">
-        <div style="width:32%"><p>Diterima dan disetujui oleh,</p><br><br><br><p><strong>( <span id="sp-nama-ttd2">Nama Karyawan</span> )</strong></p></div>
-        <div style="width:32%"><p>Mengetahui,</p><br><br><br><p><strong>Compliance Audit</strong></p></div>
-        <div style="width:32%"><p>Mengetahui,</p><br><br><br><p><strong>Manager HRD</strong></p></div>
+        <div style="width:32%"><p>Diterima dan disetujui oleh,</p><br><br><p><strong>( <span id="sp-nama-ttd2">Nama Karyawan</span> )</strong></p></div>
+        <div style="width:32%"><p>Mengetahui,</p><br><br><p><strong>Compliance Audit</strong></p></div>
+        <div style="width:32%"><p>Mengetahui,</p><br><br><p><strong>Manager HRD</strong></p></div>
       </div>`
   },
   pernyataan:{
@@ -3859,7 +3881,7 @@ const SURAT_TEMPLATES={
       <div style="text-align:right">
         <p>Jakarta, ${now.getDate()} ${bln[now.getMonth()]} ${now.getFullYear()}</p>
         <p>Yang Membuat Pernyataan,</p>
-        <br><br><br>
+        <br><br>
         <p><strong>( <span id="sp-nama-ttd3">Nama Karyawan</span> )</strong></p>
       </div>`
   }
@@ -3908,6 +3930,9 @@ function openSuratPanggilan(empList){
   // Set sp-city
   const el8=document.getElementById('sp-city');if(el8)el8.textContent=st.city||'Jakarta';
   updateKopGaris();
+  // muat tanda tangan tersimpan (jika pernah diupload sebelumnya)
+  window.__ttdDataUrl=st.signatureData||null;
+  const btnTtd=document.getElementById('btnSisipkanTtd');if(btnTtd)btnTtd.disabled=!window.__ttdDataUrl;
   const tplSel=document.getElementById('suratTemplateSel');if(tplSel)tplSel.value='panggilan';
   switchSuratTemplate('panggilan');
   document.getElementById('suratOverlay').classList.add('open');
@@ -4125,7 +4150,7 @@ function printSurat(){
   if(!suratEl){alert('Buka surat panggilan dulu!');return;}
   const pw=window.open('','_blank','width=900,height=750,scrollbars=yes');
   if(!pw){alert('Aktifkan popup untuk mencetak!');return;}
-  pw.document.write(`<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8"><title>Surat Panggilan</title><style>*{box-sizing:border-box;margin:0;padding:0}body{background:#fff;font-family:'Times New Roman',Times,serif;color:#000}.page{padding:2.5cm 2.5cm 2cm;min-height:29.7cm;position:relative}.surat-kop{display:flex;align-items:center;gap:16px;margin-bottom:6px}.surat-kop-logo{width:70px;height:70px;flex-shrink:0;display:flex;align-items:center;justify-content:center;border-radius:8px;overflow:hidden;background:#f0f4f8}.surat-kop-logo img{width:100%;height:100%;object-fit:contain}.surat-kop-text h2{font-size:15pt;font-weight:800;text-transform:uppercase}.surat-kop-text p{font-size:10pt;color:#444}.surat-kop-garis{border-bottom:3px double #000;margin:8px 0 14px}.surat-judul{text-align:center;font-weight:700;text-decoration:underline;font-size:13pt;text-transform:uppercase;margin:10px 0 4px}.surat-bismillah{text-align:center;font-size:14pt;margin-bottom:6px}.surat-nomor{text-align:center;font-size:11pt;margin-bottom:16px}.surat-body-wrap{font-size:12pt;line-height:1.8}table{border-collapse:collapse;width:100%}@media print{.page{padding:1.5cm 2cm}}</style></head><body><div class="page">${suratEl.innerHTML}</div><script>window.onload=function(){window.focus();window.print();}<\/script></body></html>`);
+  pw.document.write(`<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8"><title>Surat</title><style>@page{size:A4;margin:0}*{box-sizing:border-box;margin:0;padding:0}body{background:#fff;font-family:'Times New Roman',Times,serif;color:#000}.page{padding:1.1cm 1.8cm 1cm;position:relative}.surat-kop{display:flex;align-items:center;gap:14px;margin-bottom:5px}.surat-kop-logo{width:60px;height:60px;flex-shrink:0;display:flex;align-items:center;justify-content:center;border-radius:8px;overflow:hidden;background:#f0f4f8}.surat-kop-logo img{width:100%;height:100%;object-fit:contain}.surat-kop-text{flex:1;text-align:center}.surat-kop-text h2{font-size:14pt;font-weight:800;text-transform:uppercase}.surat-kop-text p{font-size:9pt;color:#444}.surat-kop-garis{border-bottom:3px double #000;margin:6px 0 10px}.surat-judul{text-align:center;font-weight:700;text-decoration:underline;font-size:12.5pt;text-transform:uppercase;margin:6px 0 3px}.surat-bismillah{text-align:center;font-size:13pt;margin-bottom:4px}.surat-nomor{text-align:center;font-size:10.5pt;margin-bottom:10px}.surat-body-wrap{font-size:10.5pt;line-height:1.45}.surat-body-wrap p{margin-bottom:3px}.surat-body-wrap br{line-height:1.1}table{border-collapse:collapse;width:100%}.surat-ttd-img{max-width:110px;max-height:70px;object-fit:contain}</style></head><body><div class="page">${suratEl.innerHTML}</div><script>window.onload=function(){window.focus();window.print();}<\/script></body></html>`);
   pw.document.close();
 }
 
