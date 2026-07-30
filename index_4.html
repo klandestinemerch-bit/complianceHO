@@ -3772,4 +3772,552 @@ const SURAT_TEMPLATES={
         <li>Surat Teguran berlaku untuk 3 (tiga) bulan kedepan sejak diterbitkan.</li>
         <li>Apabila dalam kurun waktu 3 (tiga) bulan kedepan sejak tanggal penerbitan Surat Teguran yang bersangkutan tidak melakukan tindak pelanggaran serta dapat meningkatkan kapasitas dan kinerja yang menjadi dasar atas diterbitkannya Surat Teguran ini, maka Surat Teguran dinyatakan sudah tidak berlaku.</li>
         <li>Jika dalam kurun waktu 3 (tiga) bulan kedepan sejak Surat Teguran diterbitkan yang bersangkutan didapati kembali melakukan tindakan pelanggaran dan tidak ada peningkatan kapasitas maupun kinerja, maka akan menjadi pertimbangan untuk para pimpinan setempat mengeluarkan Surat Peringatan Pertama SP1.</li>
-      <
+      </ol>
+      <br>
+      <p style="text-align:justify">Demikian Surat Teguran ini dibuat agar dapat menjadi peringatan bagi yang bersangkutan untuk dapat memperbaiki kinerjanya dan menjadi pertimbangan pimpinan pusat untuk memberikan kebijakan selanjutnya.</p>
+      <br>
+      <p>Jakarta, ${now.getDate()} ${bln[now.getMonth()]} ${now.getFullYear()}</p>
+      <br>
+      <div style="display:flex;justify-content:space-between;margin-top:.5rem">
+        <div style="width:45%"><p>Dibuat oleh,</p><p>Compliance Auditor</p><br><br><br><p><strong>( Sapta Riyadi )</strong></p></div>
+        <div style="width:45%;text-align:center"><p>&nbsp;</p><p>Mflash</p><br><br><br><p><strong>( <span id="sp-nama-ttd">Nama Karyawan</span> )</strong></p></div>
+      </div>
+      <br>
+      <div style="font-size:11px">
+        <p>Tembusan Yth. :</p>
+        <p>CEO madinah Mflash ;</p>
+        <p>Store Leader Mflash ;</p>
+        <p>Supervisor Mflash ;</p>
+      </div>`
+  },
+  peringatan:{
+    title:'Surat Peringatan',
+    prefix:'SP',
+    body:(bln,now)=>`
+      <div class="surat-bismillah">بسم الله الرحمن الرحيم</div>
+      <div class="surat-judul">SURAT PERINGATAN <span id="sp-level-roman">I</span></div>
+      <div class="surat-nomor" id="sp-nomor">No/001/AUD - SP/ <span id="sp-bulan">${String(now.getMonth()+1).padStart(2,'0')}</span>/<span id="sp-tahun">${now.getFullYear()}</span></div>
+      <br>
+      <p>Surat peringatan ini diberikan kepada:</p>
+      <br>
+      <table style="border-collapse:collapse;font-size:12px;margin:4px 0">
+        <tr><td style="padding:2px 8px 2px 0;width:130px;vertical-align:top">Nama lengkap</td><td style="padding:2px 0">: <strong id="sp-nama">Nama Karyawan</strong></td></tr>
+        <tr><td style="padding:2px 8px 2px 0;vertical-align:top">NIK</td><td style="padding:2px 0">: .....................</td></tr>
+        <tr><td style="padding:2px 8px 2px 0;vertical-align:top">Jabatan</td><td style="padding:2px 0">: <span id="sp-jabatan">Jabatan</span></td></tr>
+        <tr><td style="padding:2px 8px 2px 0;vertical-align:top">Divisi</td><td style="padding:2px 0">: Madinah Flash</td></tr>
+        <tr><td style="padding:2px 8px 2px 0;vertical-align:top">Cabang</td><td style="padding:2px 0">: <span id="sp-divisi">Divisi</span></td></tr>
+        <tr><td style="padding:2px 8px 2px 0;vertical-align:top">Kesalahan</td><td style="padding:2px 0">: [Isi uraian kesalahan]</td></tr>
+        <tr><td style="padding:2px 8px 2px 0;vertical-align:top">Pelanggaran</td><td style="padding:2px 0">: [Isi uraian pelanggaran]</td></tr>
+      </table>
+      <br>
+      <p style="text-align:justify">Surat Peringatan <span class="sp-level-roman2">I</span> ini dibuat sebagai bentuk Peringatan, arahan dan pedoman bagi saudara untuk:</p>
+      <ol style="padding-left:20px;font-size:12px;text-align:justify">
+        <li>Untuk senantiasa bertaqwa kepada Allah dan memohon untuk diberikan kemudahan.</li>
+        <li>Memperbaiki kinerja agar pada periode berikutnya tidak melakukan kesalahan yang sama.</li>
+      </ol>
+      <p style="text-align:justify">Masa berlaku Surat Peringatan ini adalah 3 bulan sejak surat ini dibuat. Apabila saudara melakukan kesalahan yang sama di masa berlaku tersebut atau ditemukan pelanggaran lain maka sanksi akan ditingkatkan menjadi <span class="sp-level-next">SP2</span>.</p>
+      <br>
+      <p style="text-align:justify">Demikian surat peringatan ini dibuat untuk menjadi perhatian bagi yang bersangkutan.</p>
+      <br>
+      <p>Jakarta ${now.getDate()} ${bln[now.getMonth()]} ${now.getFullYear()}</p>
+      <p><strong>PT Madinah Group Indonesia</strong></p>
+      <br>
+      <div style="display:flex;justify-content:space-between;margin-top:.5rem;text-align:center;font-size:12px">
+        <div style="width:32%"><p>Diterima dan disetujui oleh,</p><br><br><br><p><strong>( <span id="sp-nama-ttd2">Nama Karyawan</span> )</strong></p></div>
+        <div style="width:32%"><p>Mengetahui,</p><br><br><br><p><strong>Compliance Audit</strong></p></div>
+        <div style="width:32%"><p>Mengetahui,</p><br><br><br><p><strong>Manager HRD</strong></p></div>
+      </div>`
+  },
+  pernyataan:{
+    title:'Surat Pernyataan Kesediaan Membayar Denda',
+    prefix:'SPD',
+    body:(bln,now)=>`
+      <div class="surat-bismillah">بسم الله الرحمن الرحيم</div>
+      <div class="surat-judul">SURAT PERNYATAAN KESEDIAAN MEMBAYAR DENDA</div>
+      <br>
+      <p>Yang bertanda tangan di bawah ini:</p>
+      <br>
+      <table style="border-collapse:collapse;font-size:12px;margin:4px 0">
+        <tr><td style="padding:2px 8px 2px 0;width:130px;vertical-align:top">Nama Lengkap</td><td style="padding:2px 0">: <strong id="sp-nama">Nama Karyawan</strong></td></tr>
+        <tr><td style="padding:2px 8px 2px 0;vertical-align:top">Cabang</td><td style="padding:2px 0">: <span id="sp-divisi">Divisi</span></td></tr>
+        <tr><td style="padding:2px 8px 2px 0;vertical-align:top">NIK</td><td style="padding:2px 0">: .....................</td></tr>
+        <tr><td style="padding:2px 8px 2px 0;vertical-align:top">Jabatan</td><td style="padding:2px 0">: <span id="sp-jabatan">Jabatan</span></td></tr>
+      </table>
+      <br>
+      <p style="text-align:justify">Dengan ini menyatakan dengan sesungguhnya, tanpa paksaan dari pihak manapun, bahwa saya:</p>
+      <ol style="padding-left:20px;font-size:12px;text-align:justify">
+        <li>Mengakui dan memahami sepenuhnya komitmen atau surat edaran yang telah disepakati sebelumnya No: 047/SE/P&amp;C/MGI/03/2026</li>
+        <li>Menyatakan bahwa saya telah melakukan pelanggaran terhadap salah satu atau beberapa ketentuan tersebut,</li>
+        <li>Memahami dan menerima segala konsekuensi yang timbul akibat pelanggaran tersebut, termasuk namun tidak terbatas pada kewajiban pembayaran denda.</li>
+        <li>Bersedia dan sanggup untuk memenuhi kewajiban pembayaran denda sebesar : Rp <span id="sp-nominal-denda">100.000</span> (<span id="sp-nominal-terbilang">Seratus Ribu Rupiah</span>) sesuai dengan ketentuan yang telah disepakati dalam komitmen pada SE No: 047/SE/P&amp;C/MGI/03/2026</li>
+        <li>Akan melaksanakan pembayaran denda tersebut selambat-lambatnya pada tanggal dan waktu pembagian gaji/ bagi hasil</li>
+        <li>Menyatakan bahwa surat pernyataan ini dibuat sebagai bentuk pertanggungjawaban dan komitmen saya untuk memenuhi kewajiban yang telah disepakati.</li>
+      </ol>
+      <br>
+      <p style="text-align:justify">Demikian surat pernyataan ini saya buat dengan sebenarnya untuk dapat dipergunakan sebagaimana mestinya.</p>
+      <br><br>
+      <div style="text-align:right">
+        <p>Jakarta, ${now.getDate()} ${bln[now.getMonth()]} ${now.getFullYear()}</p>
+        <p>Yang Membuat Pernyataan,</p>
+        <br><br><br>
+        <p><strong>( <span id="sp-nama-ttd3">Nama Karyawan</span> )</strong></p>
+      </div>`
+  }
+};
+function switchSuratTemplate(key){
+  const bln=['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+  const now=new Date();
+  const tpl=SURAT_TEMPLATES[key]||SURAT_TEMPLATES.panggilan;
+  const body=document.getElementById('suratBody');
+  if(body)body.innerHTML=tpl.body(bln,now)+`<br><div style="border-top:1px solid #ccc;padding-top:6px;font-size:10px;color:#888;text-align:center">Dokumen diterbitkan oleh Departemen HRD — M Flash Compliance Audit System</div>`;
+  const lvlSel=document.getElementById('spLevelSel');
+  if(lvlSel){
+    lvlSel.style.display=key==='peringatan'?'inline-block':'none';
+    if(key==='peringatan'){lvlSel.value='I';updateSpLevel('I')}
+  }
+  updateSurat(); // isi ulang data karyawan yang sudah dipilih (kalau ada) ke template baru
+}
+function updateSpLevel(level){
+  const next={I:'SP2',II:'SP3',III:'PHK (Pemutusan Hubungan Kerja)'};
+  const roman=document.getElementById('sp-level-roman');if(roman)roman.textContent=level;
+  document.querySelectorAll('.sp-level-roman2').forEach(el=>el.textContent=level);
+  document.querySelectorAll('.sp-level-next').forEach(el=>el.textContent=next[level]||'SP2');
+}
+function resetSuratContent(){
+  if(!confirm('Reset isi surat ke template awal?'))return;
+  const sel=document.getElementById('suratTemplateSel');
+  switchSuratTemplate(sel?sel.value:'panggilan');
+}
+
+// Override openSuratPanggilan to also load kop from settings
+const _origOpenSurat = typeof openSuratPanggilan === 'function' ? openSuratPanggilan : null;
+function openSuratPanggilan(empList){
+  setEmpOptions('suratEmpSel',empList);
+  const now=new Date();
+  const bln=['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+  const el1=document.getElementById('sp-bulan');if(el1)el1.textContent=bln[now.getMonth()];
+  const el2=document.getElementById('sp-tahun');if(el2)el2.textContent=now.getFullYear();
+  const el3=document.getElementById('sp-tgl-surat');if(el3)el3.textContent=now.getDate()+' '+bln[now.getMonth()]+' '+now.getFullYear();
+  const st=DB.getObj('settings',{});
+  const nama=st.company||'M FLASH';
+  const alamat=st.address||'Jakarta, Indonesia';
+  const el4=document.getElementById('sp-company-name');if(el4)el4.textContent=nama.toUpperCase();
+  const el5=document.getElementById('sp-company-address');if(el5)el5.textContent=alamat;
+  const el6=document.getElementById('kopNamaInput');if(el6)el6.value=nama;
+  const el7=document.getElementById('kopAlamatInput');if(el7)el7.value=alamat;
+  // Set sp-city
+  const el8=document.getElementById('sp-city');if(el8)el8.textContent=st.city||'Jakarta';
+  updateKopGaris();
+  const tplSel=document.getElementById('suratTemplateSel');if(tplSel)tplSel.value='panggilan';
+  switchSuratTemplate('panggilan');
+  document.getElementById('suratOverlay').classList.add('open');
+  if(empList&&empList.length===1){
+    const sel=document.getElementById('suratEmpSel');
+    if(sel){sel.value=empList[0].id;updateSurat();}
+  }
+}
+// Dipanggil dari kartu "Perlu Dipanggil" di dashboard — hanya menampilkan
+// nama karyawan yang tercatat di laporan Temuan Penampilan DAN Monitoring Kebersihan
+function openSuratPanggilanDipanggil(){
+  const list=empsPerluDipanggil();
+  if(!list.length){toast('Tidak ada karyawan yang tercatat di laporan Penampilan atau Kebersihan saat ini.','info');return}
+  openSuratPanggilan(list);
+}
+
+// Override updateSurat
+function updateSurat(){
+  const empId=val('suratEmpSel');if(!empId)return;
+  const e=DB.get('employees').find(x=>x.id===parseInt(empId));if(!e)return;
+  const el1=document.getElementById('sp-nama');if(el1)el1.textContent=e.name;
+  const el2=document.getElementById('sp-jabatan');if(el2)el2.textContent=e.role;
+  const el3=document.getElementById('sp-divisi');if(el3)el3.textContent=empDiv(e);
+  ['sp-nama2','sp-nama-ttd','sp-nama-ttd2','sp-nama-ttd3'].forEach(id=>{
+    const el=document.getElementById(id);if(el)el.textContent=e.name;
+  });
+}
+
+// Fix foto upload handler if missing
+function handleFotoUpload(evt){
+  const file=evt.target.files[0];if(!file)return;
+  if(file.size>2*1024*1024){toast('Ukuran foto maksimal 2MB','error');return}
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const data=e.target.result;
+    const fotoData=document.getElementById('empFotoData');if(fotoData)fotoData.value=data;
+    const prev=document.getElementById('empFotoPreview');const ph=document.getElementById('fotoUploadPlaceholder');
+    if(prev){prev.src=data;prev.style.display='block';}
+    if(ph)ph.style.display='none';
+  };
+  reader.readAsDataURL(file);
+}
+
+// Ensure openFormEmp resets foto correctly
+function openFormEmp(){
+  document.getElementById('formEmpTitle').textContent='Tambah Karyawan Baru';
+  document.getElementById('empId').value='';
+  const fotoData=document.getElementById('empFotoData');if(fotoData)fotoData.value='';
+  const prev=document.getElementById('empFotoPreview');const ph=document.getElementById('fotoUploadPlaceholder');
+  if(prev){prev.src='';prev.style.display='none';}if(ph)ph.style.display='block';
+  ['empName','empRole','empDiv','empTelp','empCatatan'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  const ep=document.getElementById('empProduktif');if(ep)ep.value='80';
+  const epe=document.getElementById('empPenampilan');if(epe)epe.value='A';
+  const ek=document.getElementById('empKontrak');if(ek)ek.value='Karyawan Tetap';
+  const ej=document.getElementById('empJoinDate');if(ej)ej.value=todayStr();
+  document.getElementById('formEmpOverlay').classList.add('open');
+}
+function openFormEmpEdit(id){
+  const e=DB.get('employees').find(x=>x.id===id);if(!e)return;
+  document.getElementById('formEmpTitle').textContent='Edit Data Karyawan';
+  document.getElementById('empId').value=e.id;
+  const fotoData=document.getElementById('empFotoData');if(fotoData)fotoData.value=e.foto||'';
+  const prev=document.getElementById('empFotoPreview');const ph=document.getElementById('fotoUploadPlaceholder');
+  if(e.foto){if(prev){prev.src=e.foto;prev.style.display='block';}if(ph)ph.style.display='none';}
+  else{if(prev){prev.src='';prev.style.display='none';}if(ph)ph.style.display='block';}
+  document.getElementById('empName').value=e.name;document.getElementById('empRole').value=e.role;
+  document.getElementById('empDiv').value=e.div;
+  document.getElementById('empProduktif').value=e.produktif;document.getElementById('empPenampilan').value=e.penampilan;
+  document.getElementById('empTelp').value=e.telp||'';document.getElementById('empKontrak').value=e.kontrak||'Karyawan Tetap';
+  document.getElementById('empCatatan').value=e.catatan||'';document.getElementById('empJoinDate').value=e.joinDate||'';
+  document.getElementById('formEmpOverlay').classList.add('open');
+}
+
+
+// ============================================================
+// LOGIN SYSTEM
+// ============================================================
+const ADMIN_PASSWORD = 'admin123';
+let currentRole = null;
+
+function switchLoginTab(tab){
+  document.getElementById('tabAdmin').classList.toggle('active', tab==='admin');
+  document.getElementById('tabUser').classList.toggle('active', tab==='user');
+  document.getElementById('adminForm').style.display = tab==='admin'?'block':'none';
+  document.getElementById('userForm').style.display  = tab==='user' ?'block':'none';
+  document.getElementById('loginErr').classList.remove('show');
+}
+function doLogin(){
+  const pwd = document.getElementById('loginPwd').value;
+  if(pwd === ADMIN_PASSWORD){ loginAs('admin'); }
+  else { document.getElementById('loginErr').classList.add('show'); document.getElementById('loginPwd').focus(); }
+}
+function doLoginUser(){ loginAs('user'); }
+function loginAs(role){
+  currentRole = role;
+  sessionStorage.setItem('sdm_role', role);
+  document.getElementById('loginScreen').style.display='none';
+  document.body.classList.remove('login-active');
+  const chip = document.getElementById('roleChip');
+  chip.style.display = 'inline-flex';
+  chip.className = 'role-chip '+(role==='admin'?'admin':'user');
+  document.getElementById('roleLabel').textContent = role==='admin'?'Admin':'User (Lihat Saja)';
+  applyRoleRestrictions(role);
+  initApp(); // render instan pakai data lokal (cache) dulu supaya UI langsung responsif
+  DB.loadFromCloud().then(async(ok)=>{
+    if(ok){
+      await DB.bootstrapCloud(); // sekali-jalan: unggah data lokal/seed yang belum ada di cloud
+      autoLinkProduktivitas();
+      initApp();
+      const activePage=document.querySelector('.nav-item.active');
+      if(activePage){const onclickAttr=activePage.getAttribute('onclick');const m=onclickAttr&&onclickAttr.match(/showPage\('([a-z]+)'/);if(m&&m[1]!=='dashboard')showPage(m[1],activePage);}
+      toast('Data tersinkron dari cloud (Supabase).','info');
+    }
+  });
+}
+function applyRoleRestrictions(role){
+  if(role==='user'){
+    let existing = document.getElementById('roStyle');
+    if(!existing){ existing=document.createElement('style'); existing.id='roStyle'; document.head.appendChild(existing); }
+    existing.textContent='.admin-only{display:none!important} .btn-add{display:none!important} .btn-del{display:none!important} .btn-save{display:none!important} .form-footer .btn-save{display:none!important} .btn-edit-restricted{display:none!important} .btn-excel-import{display:none!important} .status-switch{display:none!important}';
+    const bar=document.getElementById('readonlyBar');
+    if(!bar){
+      const b=document.createElement('div');
+      b.className='readonly-bar'; b.id='readonlyBar';
+      b.innerHTML='<i class="ti ti-eye"></i>&nbsp;Anda masuk sebagai <strong>User</strong> — mode lihat saja. Tidak dapat menambah, mengedit, menghapus, mengimpor data, atau mengakses Pengaturan.';
+      const main=document.querySelector('.main');
+      if(main) main.insertBefore(b, main.firstChild);
+    }
+  } else {
+    const roSt=document.getElementById('roStyle'); if(roSt)roSt.remove();
+    const bar=document.getElementById('readonlyBar'); if(bar)bar.remove();
+  }
+}
+function doLogout(){
+  sessionStorage.removeItem('sdm_role');
+  currentRole=null;
+  const pwd=document.getElementById('loginPwd'); if(pwd)pwd.value='';
+  const err=document.getElementById('loginErr'); if(err)err.classList.remove('show');
+  switchLoginTab('admin');
+  document.getElementById('loginScreen').style.display='flex';
+  document.body.classList.add('login-active');
+  const bar=document.getElementById('readonlyBar'); if(bar)bar.remove();
+  const roSt=document.getElementById('roStyle'); if(roSt)roSt.remove();
+  const chip=document.getElementById('roleChip'); if(chip)chip.style.display='none';
+}
+
+// ============================================================
+// SEARCH (global topbar)
+// ============================================================
+function openDrop(){document.getElementById('srchDrop').classList.add('open')}
+function closeDrop(){document.getElementById('srchDrop').classList.remove('open')}
+document.addEventListener('click',e=>{if(!e.target.closest('.srch-wrap'))closeDrop()});
+
+function runSearch(q){
+  const drop=document.getElementById('srchDrop');
+  q=q.trim(); if(!q){drop.classList.remove('open');drop.innerHTML='';return;}
+  drop.classList.add('open');
+  const emps=DB.get('employees'), sps=DB.get('sp'), tegs=DB.get('teguran'), dendas=DB.get('denda'), bhs=DB.get('berhenti');
+  const ql=q.toLowerCase(); let html='';
+  const fEmps=emps.filter(isEmpActive).filter(e=>e.name.toLowerCase().includes(ql)||empDiv(e).toLowerCase().includes(ql)||e.role.toLowerCase().includes(ql)).slice(0,5);
+  if(fEmps.length){
+    html+='<div class="srch-group-hd">Karyawan</div>';
+    fEmps.forEach(e=>{
+      const p=empGols(e), gc2=gcProd(p);
+      html+=`<div class="srch-item" onclick="closeDrop();openModal(${e.id})"><div class="srch-ic" style="background:#E6F1FB;color:#185FA5"><i class="ti ti-user"></i></div><div><div class="srch-main">${e.name}</div><div class="srch-sub">${e.role} — ${empDiv(e)}</div></div><span class="srch-badge" style="background:#f0f2f7;color:${gc2}">${p}%</span></div>`;
+    });
+  }
+  const fSP=sps.filter(r=>{const e=emps.find(x=>x.id===r.empId);return(e&&e.name.toLowerCase().includes(ql))||r.level.toLowerCase().includes(ql)||r.alasan.toLowerCase().includes(ql);}).slice(0,4);
+  if(fSP.length){
+    html+='<div class="srch-group-hd">SP Performance</div>';
+    fSP.forEach(r=>{const e=emps.find(x=>x.id===r.empId);const lc=r.level==='SP 1'?'#856404,#FFF3CD':r.level==='SP 2'?'#842029,#F8D7DA':'#fca5a5,#7f1d1d';const [fc,bc]=lc.split(',');html+=`<div class="srch-item" onclick="showPage('sp',null);closeDrop()"><div class="srch-ic" style="background:#FCEBEB;color:#ef4444"><i class="ti ti-user-exclamation"></i></div><div><div class="srch-main">${e?e.name:'?'}</div><div class="srch-sub">${r.alasan.substring(0,50)}</div></div><span class="srch-badge" style="background:${bc};color:${fc}">${r.level}</span></div>`;});
+  }
+  const fTeg=tegs.filter(r=>{const e=emps.find(x=>x.id===r.empId);return(e&&e.name.toLowerCase().includes(ql))||r.jenis.toLowerCase().includes(ql)||r.alasan.toLowerCase().includes(ql);}).slice(0,4);
+  if(fTeg.length){
+    html+='<div class="srch-group-hd">Teguran Peringatan</div>';
+    fTeg.forEach(r=>{const e=emps.find(x=>x.id===r.empId);html+=`<div class="srch-item" onclick="showPage('teguran',null);closeDrop()"><div class="srch-ic" style="background:#FAEEDA;color:#f59e0b"><i class="ti ti-alert-circle"></i></div><div><div class="srch-main">${e?e.name:'?'}</div><div class="srch-sub">${r.alasan.substring(0,50)}</div></div><span class="srch-badge" style="background:#FAEEDA;color:#633806">${r.jenis}</span></div>`;});
+  }
+  const fDenda=dendas.filter(r=>{const e=emps.find(x=>x.id===r.empId);return(e&&e.name.toLowerCase().includes(ql))||(r.cabang&&r.cabang.toLowerCase().includes(ql))||(r.level&&r.level.toLowerCase().includes(ql))||(r.keterangan&&r.keterangan.toLowerCase().includes(ql));}).slice(0,4);
+  if(fDenda.length){
+    html+='<div class="srch-group-hd">Denda Pelanggaran</div>';
+    fDenda.forEach(r=>{const e=emps.find(x=>x.id===r.empId);html+=`<div class="srch-item" onclick="showPage('denda',null);closeDrop()"><div class="srch-ic" style="background:#FCEBEB;color:#ef4444"><i class="ti ti-receipt-dollar"></i></div><div><div class="srch-main">${e?e.name:'?'}</div><div class="srch-sub">${r.keterangan.substring(0,50)}</div></div><span class="srch-badge" style="background:#FAEEDA;color:#633806">${fmtRp(r.nominal)}</span></div>`;});
+  }
+  const fBh=bhs.filter(r=>{const e=emps.find(x=>x.id===r.empId);return(e&&e.name.toLowerCase().includes(ql))||(r.empName&&r.empName.toLowerCase().includes(ql))||r.alasan.toLowerCase().includes(ql);}).slice(0,4);
+  if(fBh.length){
+    html+='<div class="srch-group-hd">Diberhentikan</div>';
+    fBh.forEach(r=>{const e=emps.find(x=>x.id===r.empId);const nm=e?e.name:(r.empName||'?');const ac=r.alasan==='Fraud'?'#fca5a5,#7f1d1d':r.alasan==='Tidak Perform'?'#842029,#F8D7DA':r.alasan==='Resign'?'#0D47A1,#E3F2FD':'#5c6270,#f0f2f7';const[fc2,bc2]=ac.split(',');html+=`<div class="srch-item" onclick="showPage('berhenti',null);closeDrop()"><div class="srch-ic" style="background:#FCEBEB;color:#ef4444"><i class="ti ti-user-off"></i></div><div><div class="srch-main">${nm}</div><div class="srch-sub">${r.ket?r.ket.substring(0,50):'-'}</div></div><span class="srch-badge" style="background:${bc2};color:${fc2}">${r.alasan}</span></div>`;});
+  }
+  if(!html)html=`<div class="srch-empty"><i class="ti ti-search-off" style="font-size:24px;display:block;margin-bottom:6px"></i>Tidak ada hasil untuk "${q}"</div>`;
+  drop.innerHTML=html;
+}
+
+// ============================================================
+// SEARCH in dashboard table by name
+// ============================================================
+function filterEmpByName(q){
+  const empSearchInp = document.getElementById('empSearchInp');
+  if(!q || q.trim()===''){empPage=1;renderEmpTable(curFilter);return;}
+  q=q.trim().toLowerCase();
+  const emps=DB.get('employees').filter(isEmpActive);
+  const list=emps.filter(e=>e.name.toLowerCase().includes(q)||empDiv(e).toLowerCase().includes(q)||e.role.toLowerCase().includes(q));
+  const tb=document.getElementById('empBody'); if(!tb)return;
+  if(!list.length){tb.innerHTML=`<tr><td colspan="6"><div class="empty-state"><i class="ti ti-search-off"></i><p>Tidak ada karyawan cocok dengan "${q}"</p></div></td></tr>`;updateEmpPagination(0,0,0);return;}
+  tb.innerHTML=list.map(empRowHtml).join('');
+  const info=document.getElementById('empPageInfo');if(info)info.textContent=`Menampilkan ${list.length} hasil pencarian`;
+  const numEl=document.getElementById('empPageNum');if(numEl)numEl.textContent='-';
+  const prevBtn=document.getElementById('empPagePrev');if(prevBtn){prevBtn.disabled=true;prevBtn.style.opacity='0.4'}
+  const nextBtn=document.getElementById('empPageNext');if(nextBtn){nextBtn.disabled=true;nextBtn.style.opacity='0.4'}
+}
+
+// ============================================================
+// PRINT SURAT (new window — works correctly)
+// ============================================================
+function printSurat(){
+  const suratEl=document.getElementById('suratPreview');
+  if(!suratEl){alert('Buka surat panggilan dulu!');return;}
+  const pw=window.open('','_blank','width=900,height=750,scrollbars=yes');
+  if(!pw){alert('Aktifkan popup untuk mencetak!');return;}
+  pw.document.write(`<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8"><title>Surat Panggilan</title><style>*{box-sizing:border-box;margin:0;padding:0}body{background:#fff;font-family:'Times New Roman',Times,serif;color:#000}.page{padding:2.5cm 2.5cm 2cm;min-height:29.7cm;position:relative}.surat-kop{display:flex;align-items:center;gap:16px;margin-bottom:6px}.surat-kop-logo{width:70px;height:70px;flex-shrink:0;display:flex;align-items:center;justify-content:center;border-radius:8px;overflow:hidden;background:#f0f4f8}.surat-kop-logo img{width:100%;height:100%;object-fit:contain}.surat-kop-text h2{font-size:15pt;font-weight:800;text-transform:uppercase}.surat-kop-text p{font-size:10pt;color:#444}.surat-kop-garis{border-bottom:3px double #000;margin:8px 0 14px}.surat-judul{text-align:center;font-weight:700;text-decoration:underline;font-size:13pt;text-transform:uppercase;margin:10px 0 4px}.surat-bismillah{text-align:center;font-size:14pt;margin-bottom:6px}.surat-nomor{text-align:center;font-size:11pt;margin-bottom:16px}.surat-body-wrap{font-size:12pt;line-height:1.8}table{border-collapse:collapse;width:100%}@media print{.page{padding:1.5cm 2cm}}</style></head><body><div class="page">${suratEl.innerHTML}</div><script>window.onload=function(){window.focus();window.print();}<\/script></body></html>`);
+  pw.document.close();
+}
+
+// ============================================================
+// SIMPAN SURAT PANGGILAN SEBAGAI PDF (DOWNLOAD)
+// ============================================================
+async function kirimSuratWA(){
+  const empId=val('suratEmpSel');
+  if(!empId){toast('Pilih karyawan terlebih dahulu!','error');return;}
+  const e=DB.get('employees').find(x=>x.id===parseInt(empId));
+  if(!e){toast('Karyawan tidak ditemukan!','error');return;}
+  const suratEl=document.getElementById('suratPreview');
+  if(!suratEl){toast('Buka surat panggilan dulu!','error');return;}
+  if(typeof html2canvas==='undefined'||typeof window.jspdf==='undefined'){toast('Library pembuat PDF gagal dimuat. Cek koneksi internet.','error');return;}
+
+  const btn=document.getElementById('btnKirimWA');
+  const origHtml=btn?btn.innerHTML:'';
+  if(btn){btn.disabled=true;btn.innerHTML='<i class="ti ti-loader-2"></i> Menyiapkan PDF...';}
+
+  // Simpan referensi gambar yang mungkin perlu diamankan/dilepas sementara
+  const imgs=Array.from(suratEl.querySelectorAll('img'));
+  const restoreList=[];
+  let logoDropped=false;
+
+  try{
+    // Pastikan semua gambar (mis. logo kop surat) sudah selesai dimuat,
+    // lalu ubah ke data-URI supaya tidak membuat canvas "tainted" (penyebab paling umum PDF gagal dibuat).
+    await Promise.all(imgs.map(img=>new Promise(resolve=>{
+      const finish=()=>{
+        try{
+          if(img.src && !img.src.startsWith('data:') && img.naturalWidth>0){
+            const c=document.createElement('canvas');
+            c.width=img.naturalWidth; c.height=img.naturalHeight;
+            const ctx=c.getContext('2d');
+            ctx.drawImage(img,0,0);
+            const dataUrl=c.toDataURL('image/png');
+            restoreList.push({img,src:img.src});
+            img.src=dataUrl;
+          }
+        }catch(convErr){
+          // Gambar tidak bisa diamankan (mis. dari sumber lintas-domain tanpa izin CORS) -> lepas saja
+          // agar sisa isi surat tetap bisa diunduh sebagai PDF.
+          restoreList.push({img,src:img.src});
+          img.removeAttribute('src');
+          img.style.display='none';
+          logoDropped=true;
+        }
+        resolve();
+      };
+      if(img.complete)finish();
+      else{img.onload=finish;img.onerror=finish;}
+    })));
+
+    const canvas=await html2canvas(suratEl,{scale:2,useCORS:true,allowTaint:false,backgroundColor:'#ffffff',imageTimeout:15000});
+    const imgData=canvas.toDataURL('image/jpeg',0.95);
+    const {jsPDF}=window.jspdf;
+    const pdf=new jsPDF({unit:'mm',format:'a4',orientation:'portrait'});
+    const pageW=pdf.internal.pageSize.getWidth();
+    const pageH=pdf.internal.pageSize.getHeight();
+    const imgW=pageW;
+    const imgH=canvas.height*imgW/canvas.width;
+    let heightLeft=imgH, position=0;
+    pdf.addImage(imgData,'JPEG',0,position,imgW,imgH);
+    heightLeft-=pageH;
+    while(heightLeft>0){
+      position=heightLeft-imgH;
+      pdf.addPage();
+      pdf.addImage(imgData,'JPEG',0,position,imgW,imgH);
+      heightLeft-=pageH;
+    }
+    const fileName=`Surat_Panggilan_${e.name.replace(/\s+/g,'_')}.pdf`;
+    pdf.save(fileName);
+
+    toast(logoDropped
+      ? `PDF berhasil diunduh (${fileName}), tapi logo kop surat dilewati karena tidak bisa dimuat.`
+      : `PDF surat panggilan ${e.name} berhasil diunduh (${fileName}).`,'success');
+  }catch(err){
+    console.error('Gagal membuat PDF surat panggilan:',err);
+    const reason=(err&&err.name==='SecurityError')
+      ? 'gambar logo kop surat berasal dari sumber yang diblokir keamanan browser (coba upload ulang logo lewat "Upload Logo").'
+      : (err&&err.message)?err.message:'penyebab tidak diketahui.';
+    toast(`Gagal membuat PDF: ${reason}`,'error');
+  }finally{
+    restoreList.forEach(({img,src})=>{img.src=src;img.style.display='';});
+    if(btn){btn.disabled=false;btn.innerHTML=origHtml;}
+  }
+}
+
+// Simpan surat yang sedang diedit sebagai dokumen PDF di panel Surat Menyurat
+async function simpanSuratKeMenyurat(){
+  const empId=val('suratEmpSel');
+  const e=empId?DB.get('employees').find(x=>x.id===parseInt(empId)):null;
+  const suratEl=document.getElementById('suratPreview');
+  if(!suratEl){toast('Editor surat belum siap!','error');return}
+  if(typeof html2canvas==='undefined'||typeof window.jspdf==='undefined'){toast('Library pembuat PDF gagal dimuat. Cek koneksi internet.','error');return}
+  const btn=document.getElementById('btnSimpanKeSuratMenyurat');
+  const origHtml=btn?btn.innerHTML:'';
+  if(btn){btn.disabled=true;btn.innerHTML='<i class="ti ti-loader-2"></i> Menyimpan...';}
+  const imgs=Array.from(suratEl.querySelectorAll('img'));
+  const restoreList=[];
+  try{
+    await Promise.all(imgs.map(img=>new Promise(resolve=>{
+      const finish=()=>{
+        try{
+          if(img.src&&!img.src.startsWith('data:')&&img.naturalWidth>0){
+            const c=document.createElement('canvas');
+            c.width=img.naturalWidth;c.height=img.naturalHeight;
+            const ctx=c.getContext('2d');
+            ctx.drawImage(img,0,0);
+            const dataUrl=c.toDataURL('image/png');
+            restoreList.push({img,src:img.src});
+            img.src=dataUrl;
+          }
+        }catch{
+          restoreList.push({img,src:img.src});
+          img.removeAttribute('src');
+          img.style.display='none';
+        }
+        resolve();
+      };
+      if(img.complete)finish();else{img.onload=finish;img.onerror=finish;}
+    })));
+    const canvas=await html2canvas(suratEl,{scale:2,useCORS:true,allowTaint:false,backgroundColor:'#ffffff',imageTimeout:15000});
+    const imgData=canvas.toDataURL('image/jpeg',0.95);
+    const{jsPDF}=window.jspdf;
+    const pdf=new jsPDF({unit:'mm',format:'a4',orientation:'portrait'});
+    const pageW=pdf.internal.pageSize.getWidth();
+    const pageH=pdf.internal.pageSize.getHeight();
+    const imgW=pageW;
+    const imgH=canvas.height*imgW/canvas.width;
+    let heightLeft=imgH,position=0;
+    pdf.addImage(imgData,'JPEG',0,position,imgW,imgH);
+    heightLeft-=pageH;
+    while(heightLeft>0){
+      position=heightLeft-imgH;
+      pdf.addPage();
+      pdf.addImage(imgData,'JPEG',0,position,imgW,imgH);
+      heightLeft-=pageH;
+    }
+    const templateKey=val('suratTemplateSel')||'panggilan';
+    const tpl=SURAT_TEMPLATES[templateKey]||SURAT_TEMPLATES.panggilan;
+    const namaFile=`${tpl.title.replace(/\s+/g,'_')}_${e?e.name.replace(/\s+/g,'_'):'Dokumen'}.pdf`;
+    const blob=pdf.output('blob');
+    let evidenceItem;
+    const uploaded=await uploadEvidenceToStorage(blob,namaFile,'application/pdf');
+    if(uploaded){
+      evidenceItem={type:'pdf',name:namaFile,url:uploaded.url,path:uploaded.path};
+    }else{
+      evidenceItem={type:'pdf',name:namaFile,data:pdf.output('datauristring')};
+      toast('Dokumen disimpan lokal saja (gagal upload ke Supabase Storage)','error');
+    }
+    const nomorEl=document.getElementById('sp-nomor');
+    const nomorText=nomorEl?nomorEl.textContent.replace(/^(No|Nomor):?\s*/i,'').trim():'';
+    const rec={
+      id:Date.now().toString(),
+      tgl:todayStr(),
+      nomor:nomorText||`${tpl.prefix}-${String(Date.now()).slice(-4)}`,
+      jenis:'Keluar',
+      tujuan:e?e.name:'-',
+      perihal:tpl.title,
+      evidence:[evidenceItem]
+    };
+    const recs=DB.get('surat');
+    recs.push(rec);
+    if(!DB.set('surat',recs)){toast('Gagal menyimpan record surat (penyimpanan penuh).','error');return}
+    renderSuratTable();updateMetrics();
+    toast(`Surat berhasil disimpan ke Surat Menyurat (${namaFile})`,'success');
+  }catch(err){
+    console.error('Gagal menyimpan surat ke Surat Menyurat:',err);
+    toast('Gagal membuat/menyimpan dokumen surat: '+(err&&err.message?err.message:'penyebab tidak diketahui'),'error');
+  }finally{
+    restoreList.forEach(({img,src})=>{img.src=src;img.style.display='';});
+    if(btn){btn.disabled=false;btn.innerHTML=origHtml;}
+  }
+}
+
+// ============================================================
+// INIT APP
+// ============================================================
+function initApp(){
+  document.getElementById('currentDate').textContent=new Date().toLocaleDateString('id-ID',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  renderEmpTable('semua');
+  updateMetrics();
+  loadSettings();
+}
+
+// Auto-restore session on reload
+(function(){
+  const role=sessionStorage.getItem('sdm_role');
+  if(role) loginAs(role);
+})();
+
+</script>
+</body>
+</html>
