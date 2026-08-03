@@ -1141,7 +1141,11 @@ body.login-active{overflow:hidden;height:100vh}
           <option value="II">Surat Peringatan II</option>
           <option value="III">Surat Peringatan III (terakhir)</option>
         </select>
-        <select class="setting-select" id="suratEmpSel" onchange="updateSurat()" style="font-size:12px"><option value="">-- Pilih Karyawan --</option></select>
+        <div class="emp-select-wrap" style="position:relative;display:inline-block">
+          <input type="text" id="suratEmpSelSearch" class="setting-select" placeholder="Ketik nama karyawan..." autocomplete="off" style="font-size:12px" onfocus="empSelectOpen('suratEmpSel','suratEmpSelSearch','suratEmpSelDrop')" oninput="empSelectOnInput('suratEmpSel','suratEmpSelSearch','suratEmpSelDrop')">
+          <select id="suratEmpSel" onchange="updateSurat()" style="display:none"><option value="">-- Pilih Karyawan --</option></select>
+          <div class="emp-select-drop" id="suratEmpSelDrop" data-select="suratEmpSel" data-input="suratEmpSelSearch"></div>
+        </div>
         <button class="btn-print" onclick="printSurat()"><i class="ti ti-printer"></i>Cetak PDF</button>
         <button class="btn-print" id="btnKirimWA" onclick="kirimSuratWA()" style="background:var(--green-bg);color:var(--green-txt);border-color:transparent"><i class="ti ti-download"></i>Simpan PDF (Download)</button>
         <button class="btn-print" id="btnSimpanKeSuratMenyurat" onclick="simpanSuratKeMenyurat()" style="background:var(--blue-bg);color:var(--blue);border-color:transparent"><i class="ti ti-folder-plus"></i>Simpan ke Surat Menyurat</button>
@@ -1246,7 +1250,7 @@ body.login-active{overflow:hidden;height:100vh}
           <div class="surat-kop-text">
             <h2 id="sp-company-name" style="font-size:17px;font-weight:800;text-transform:uppercase;letter-spacing:.5px">M FLASH</h2>
             <p id="sp-company-address" style="font-size:11px;color:#444;margin-top:2px">Jakarta, Indonesia</p>
-            <p id="sp-company-telp" style="font-size:11px;color:#444">Tel. (021) 8690 9489 | Email: hrd@mflash.co.id</p>
+            <p id="sp-company-telp" style="font-size:11px;color:#444">Telp: (021) 000-0000 | Email: hrd@mflash.co.id</p>
           </div>
         </div>
         <div class="surat-kop-garis" id="suratKopGaris"></div>
@@ -3709,6 +3713,7 @@ function removeTtd(){
   }
   toast('Tanda tangan dihapus dari surat & dari penyimpanan.');
 }
+let _kopSaveTimer=null;
 function updateKopLive(){
   const nama=document.getElementById('kopNamaInput')?.value||'M FLASH';
   const alamat=document.getElementById('kopAlamatInput')?.value||'Jakarta, Indonesia';
@@ -3716,6 +3721,15 @@ function updateKopLive(){
   const el1=document.getElementById('sp-company-name');if(el1)el1.textContent=nama.toUpperCase();
   const el2=document.getElementById('sp-company-address');if(el2)el2.textContent=alamat;
   const el3=document.getElementById('sp-company-telp');if(el3)el3.textContent=telp;
+  // Simpan perubahan kop surat (nama, alamat, telp) supaya TIDAK kembali ke data lama
+  // saat editor surat dibuka lagi lain waktu. Pakai jeda kecil (debounce) supaya tidak
+  // menulis ke penyimpanan di setiap ketukan tombol.
+  clearTimeout(_kopSaveTimer);
+  _kopSaveTimer=setTimeout(()=>{
+    const st=DB.getObj('settings',{});
+    st.company=nama;st.address=alamat;st.telp=telp;
+    DB.setObj('settings',st);
+  },400);
 }
 function updateKopGaris(){
   const type=document.getElementById('kopGarisType')?.value||'double';
@@ -3776,12 +3790,12 @@ const SURAT_TEMPLATES={
       <br>
       <p style="text-align:justify">Demikian surat panggilan ini kami sampaikan, atas perhatian serta kerjasamanya kami ucapkan terima kasih.</p>
       <br><br>
-      <div style="text-align:right">
+      <div style="text-align:center;width:200px;margin-left:auto">
         <p>Jakarta, ${now.getDate()} ${bln[now.getMonth()]} ${now.getFullYear()}</p>
         <p>Compliance Auditor</p>
         <p>PT. Madinah Grup Indonesia</p>
-        <br><br>
-        <p><strong>( <span id="sp-ttd-auditor">________________________</span> )</strong></p>
+        <div id="sp-ttd-auditor" style="min-height:55px;display:flex;align-items:center;justify-content:center;margin:4px 0">________________________</div>
+        <p><strong>Sapta Riyadi</strong></p>
       </div>`
   },
   teguran:{
@@ -3819,7 +3833,7 @@ const SURAT_TEMPLATES={
       <p>Jakarta, ${now.getDate()} ${bln[now.getMonth()]} ${now.getFullYear()}</p>
       <br>
       <div style="display:flex;justify-content:space-between;margin-top:.5rem">
-        <div style="width:45%"><p>Dibuat oleh,</p><p>Compliance Auditor</p><br><br><p><strong>( <span id="sp-ttd-auditor">________________________</span> )</strong></p></div>
+        <div style="width:45%;text-align:center"><p>Dibuat oleh,</p><p>Compliance Auditor</p><div id="sp-ttd-auditor" style="min-height:55px;display:flex;align-items:center;justify-content:center;margin:4px 0">________________________</div><p><strong>Sapta Riyadi</strong></p></div>
         <div style="width:45%;text-align:center"><p>&nbsp;</p><p>Mflash</p><br><br><p><strong>( <span id="sp-nama-ttd">Nama Karyawan</span> )</strong></p></div>
       </div>
       <br>
@@ -3864,7 +3878,7 @@ const SURAT_TEMPLATES={
       <br>
       <div style="display:flex;justify-content:space-between;margin-top:.5rem;text-align:center;font-size:12px">
         <div style="width:32%"><p>Diterima dan disetujui oleh,</p><br><br><p><strong>( <span id="sp-nama-ttd2">Nama Karyawan</span> )</strong></p></div>
-        <div style="width:32%"><p>Mengetahui,</p><p>Compliance Audit</p><br><br><p><strong>( <span id="sp-ttd-auditor">________________________</span> )</strong></p></div>
+        <div style="width:32%"><p>Mengetahui,</p><p>Compliance Audit</p><div id="sp-ttd-auditor" style="min-height:55px;display:flex;align-items:center;justify-content:center;margin:4px 0">________________________</div><p><strong>Sapta Riyadi</strong></p></div>
         <div style="width:32%"><p>Mengetahui,</p><br><br><p><strong>Manager HRD</strong></p></div>
       </div>`
   },
@@ -3965,6 +3979,7 @@ function loadSuratDraft(){
     const sel=document.getElementById('suratEmpSel');
     if(sel)sel.value=d.empId;
   }
+  empSelectSync('suratEmpSel','suratEmpSelSearch','suratEmpSelDrop');
   showDraftInfoBar(d);
   return true;
 }
@@ -4024,10 +4039,13 @@ function openSuratPanggilan(empList){
   const st=DB.getObj('settings',{});
   const nama=st.company||'M FLASH';
   const alamat=st.address||'Jakarta, Indonesia';
+  const telp=st.telp||'Telp: (021) 000-0000';
   const el4=document.getElementById('sp-company-name');if(el4)el4.textContent=nama.toUpperCase();
   const el5=document.getElementById('sp-company-address');if(el5)el5.textContent=alamat;
+  const el5b=document.getElementById('sp-company-telp');if(el5b)el5b.textContent=telp;
   const el6=document.getElementById('kopNamaInput');if(el6)el6.value=nama;
   const el7=document.getElementById('kopAlamatInput');if(el7)el7.value=alamat;
+  const el7b=document.getElementById('kopTelpInput');if(el7b)el7b.value=telp;
   // Set sp-city
   const el8=document.getElementById('sp-city');if(el8)el8.textContent=st.city||'Jakarta';
   updateKopGaris();
@@ -4048,6 +4066,7 @@ function openSuratPanggilan(empList){
     const sel=document.getElementById('suratEmpSel');
     if(sel){sel.value=empList[0].id;updateSurat();}
   }
+  empSelectSync('suratEmpSel','suratEmpSelSearch','suratEmpSelDrop');
   const draftBar=document.getElementById('draftInfoBar');if(draftBar)draftBar.style.display='none';
   const btnHapusDraft=document.getElementById('btnHapusDraft');if(btnHapusDraft)btnHapusDraft.style.display='none';
   if(hasSuratDraft()){
@@ -4343,6 +4362,7 @@ async function kirimSuratWA(){
     const tpl=SURAT_TEMPLATES[templateKey]||SURAT_TEMPLATES.panggilan;
     const fileName=`${tpl.title.replace(/\s+/g,'_')}_${e.name.replace(/\s+/g,'_')}.pdf`;
     pdf.save(fileName);
+    incrementSuratNumber(templateKey); // nomor surat bertambah untuk surat berikutnya
 
     toast(logoDropped
       ? `PDF berhasil diunduh (${fileName}), tapi logo kop surat dilewati karena tidak bisa dimuat.`
@@ -4437,6 +4457,7 @@ async function simpanSuratKeMenyurat(){
     recs.push(rec);
     if(!DB.set('surat',recs)){toast('Gagal menyimpan record surat (penyimpanan penuh).','error');return}
     renderSuratTable();updateMetrics();
+    incrementSuratNumber(templateKey); // nomor surat bertambah untuk surat berikutnya
     localStorage.removeItem('sdm_obj_suratDraft'); // surat sudah final, draft tidak diperlukan lagi
     const draftBar=document.getElementById('draftInfoBar');if(draftBar)draftBar.style.display='none';
     const btnHapusDraft=document.getElementById('btnHapusDraft');if(btnHapusDraft)btnHapusDraft.style.display='none';
