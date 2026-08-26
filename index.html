@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="id">
 <head>
 <meta charset="UTF-8">
@@ -10,7 +10,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js"></script>
 <style>
 :root{
   --bg:#f5f6fa;--surface:#fff;--surface2:#f0f2f7;--border:rgba(0,0,0,.08);--border2:rgba(0,0,0,.15);
@@ -487,7 +487,7 @@ body.login-active{overflow:hidden;height:100vh}
       <div class="right-col">
         <div class="card">
           <div class="card-title"><i class="ti ti-database"></i>Database &amp; Export</div>
-          <div class="db-status"><span class="db-dot"></span><span>localStorage aktif — data tersimpan otomatis</span></div>
+          <div class="db-status"><span class="db-dot" id="dbDot"></span><span id="dbStatusText">Memuat data dari cloud...</span></div>
           <div class="stats-row">
             <div class="stat-box"><div class="stat-box-val" style="color:var(--blue)" id="db-records">0</div><div class="stat-box-lbl">Records</div></div>
             <div class="stat-box"><div class="stat-box-val" style="color:var(--green)" id="db-size">0 KB</div><div class="stat-box-lbl">Ukuran</div></div>
@@ -1692,10 +1692,12 @@ try{
 }catch(err){console.error('Gagal inisialisasi Supabase client:',err)}
 function setCloudStatus(state,label){
   const dot=document.getElementById('cloudDot'),lbl=document.getElementById('cloudLabel');
-  if(!dot||!lbl)return;
   const colors={ok:'#22c55e',syncing:'#f59e0b',offline:'#ef4444'};
-  dot.style.background=colors[state]||'#f59e0b';
-  lbl.textContent=label;
+  if(dot)dot.style.background=colors[state]||'#f59e0b';
+  if(lbl)lbl.textContent=label;
+  const dbDot=document.getElementById('dbDot'),dbTxt=document.getElementById('dbStatusText');
+  if(dbDot)dbDot.style.background=colors[state]||'#f59e0b';
+  if(dbTxt){const msgs={ok:'Tersambung ke Supabase — data sinkron otomatis',syncing:'Menyinkronkan data ke cloud...',offline:'Mode Lokal — tidak terhubung ke cloud'};dbTxt.textContent=msgs[state]||label;}
 }
 
 const DB={
