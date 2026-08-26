@@ -1687,7 +1687,10 @@ const DEFAULT_TTD_AUDITOR='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAdwAAAE
 let sb=null;
 try{
   if(window.supabase&&window.supabase.createClient){
-    sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+    sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{
+      auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false},
+      global:{headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SUPABASE_ANON_KEY}}
+    });
   }
 }catch(err){console.error('Gagal inisialisasi Supabase client:',err)}
 function setCloudStatus(state,label){
@@ -1697,7 +1700,7 @@ function setCloudStatus(state,label){
   if(lbl)lbl.textContent=label;
   const dbDot=document.getElementById('dbDot'),dbTxt=document.getElementById('dbStatusText');
   if(dbDot)dbDot.style.background=colors[state]||'#f59e0b';
-  if(dbTxt){const msgs={ok:'Tersambung ke Supabase — data sinkron otomatis',syncing:'Menyinkronkan data ke cloud...',offline:'Mode Lokal — tidak terhubung ke cloud'};dbTxt.textContent=msgs[state]||label;}
+  if(dbTxt){const msgs={ok:'Tersambung ke Supabase \u2014 data sinkron otomatis',syncing:'Menyinkronkan data ke cloud...',offline:'Mode Lokal \u2014 tidak terhubung ke cloud'};dbTxt.textContent=msgs[state]||label;}
 }
 
 const DB={
