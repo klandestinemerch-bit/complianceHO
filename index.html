@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="id">
 <head>
 <meta charset="UTF-8">
@@ -496,6 +496,9 @@ body.login-active{overflow:hidden;height:100vh}
             <button class="btn-excel" onclick="exportExcel()"><i class="ti ti-file-spreadsheet"></i>Export Excel</button>
             <button class="btn-excel-import" onclick="document.getElementById('importXlsx').click()"><i class="ti ti-upload"></i>Import Excel</button>
             <input type="file" id="importXlsx" accept=".xlsx,.xls" style="display:none" onchange="importExcel(event)">
+            <button class="btn-excel" style="background:var(--blue)" onclick="exportBackupJSON()" title="Backup semua data ke file JSON"><i class="ti ti-database-export"></i>Backup JSON</button>
+            <button class="btn-excel-import" style="background:#7c3aed" onclick="document.getElementById('importBackupJSON').click()" title="Restore data dari file backup JSON"><i class="ti ti-database-import"></i>Restore JSON</button>
+            <input type="file" id="importBackupJSON" accept=".json" style="display:none" onchange="restoreBackupJSON(event)">
           </div>
         </div>
       </div>
@@ -4588,6 +4591,36 @@ function printSurat(){
   incrementSuratNumber(templateKey);
 }
 
+// ============================================================
+// BACKUP & RESTORE JSON (recovery data)
+// ============================================================
+function exportBackupJSON(){
+  const KEYS=['employees','kamus','produktivitas','performa','penampilan','kebersihan','sp','teguran','denda','berhenti','surat','arkaryawan'];
+  const backup={stores:{},settings:{},exportedAt:new Date().toISOString(),version:'2.0'};
+  let total=0;
+  KEYS.forEach(k=>{const d=DB.get(k);backup.stores[k]=d;total+=d.length;});
+  ['settings','logoKopSurat','ttdAuditor'].forEach(k=>{const v=DB.getObj(k,null);if(v)backup.settings[k]=v;});
+  const blob=new Blob([JSON.stringify(backup,null,2)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='backup_sdm_'+new Date().toISOString().replace(/[:.]/g,'-')+'.json';
+  document.body.appendChild(a);a.click();document.body.removeChild(a);
+  toast('Backup '+total+' records berhasil didownload!','success');
+}
+async function restoreBackupJSON(e){
+  const file=e.target.files[0];if(!file)return;
+  document.getElementById('importBackupJSON').value='';
+  try{
+    const text=await file.text();
+    const backup=JSON.parse(text);
+    if(!backup.stores){toast('File backup tidak valid!','error');return;}
+    let total=0;
+    Object.entries(backup.stores).forEach(([k,v])=>{if(Array.isArray(v)&&v.length>0){DB.set(k,v);total+=v.length;}});
+    if(backup.settings){Object.entries(backup.settings).forEach(([k,v])=>{if(v)DB.setObj(k,v);});}
+    initApp();
+    toast(total+' records berhasil direstore dari backup!','success');
+  }catch(err){toast('Gagal baca file backup: '+err.message,'error');}
+}
 // ============================================================
 // SIMPAN SURAT PANGGILAN SEBAGAI PDF (DOWNLOAD)
 // ============================================================
