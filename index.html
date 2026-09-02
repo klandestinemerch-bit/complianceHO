@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="id">
 <head>
 <meta charset="UTF-8">
@@ -1723,6 +1723,13 @@ function setCloudStatus(state,label){
 const DB={
   get:(k)=>{try{return JSON.parse(localStorage.getItem('sdm_'+k)||'[]')}catch{return[]}},
   set:(k,v)=>{
+    // Bersihkan data duplikat (id yang sama muncul lebih dari sekali) sebelum disimpan —
+    // mencegah masalah tampilan ganda maupun kegagalan sinkron ke Supabase nantinya.
+    if(Array.isArray(v)){
+      const seen=new Map();
+      v.forEach(r=>{if(r&&r.id!==undefined&&r.id!==null)seen.set(String(r.id),r);else seen.set(Symbol(),r)});
+      v=Array.from(seen.values());
+    }
     try{
       localStorage.setItem('sdm_'+k,JSON.stringify(v));
       DB._v++;
@@ -1746,9 +1753,17 @@ const DB={
     if(!sb)return;
     setCloudStatus('syncing','Menyinkron...');
     try{
-      const ids=arr.map(r=>String(r.id));
-      if(arr.length){
-        const rows=arr.map(r=>({store,record_id:String(r.id),data:r,updated_at:new Date().toISOString()}));
+      // Hilangkan duplikat ID (simpan kemunculan TERAKHIR) sebelum upsert massal.
+      // Kalau array yang sama punya 2 baris dengan id sama persis, Postgres akan
+      // menolak seluruh batch dengan error "ON CONFLICT DO UPDATE command cannot
+      // affect row a second time" — jadi kita bersihkan dulu di sini sebagai jaring pengaman,
+      // apapun penyebab id gandanya di data lokal.
+      const seen=new Map();
+      arr.forEach(r=>{if(r&&r.id!==undefined&&r.id!==null)seen.set(String(r.id),r)});
+      const cleanArr=Array.from(seen.values());
+      const ids=cleanArr.map(r=>String(r.id));
+      if(cleanArr.length){
+        const rows=cleanArr.map(r=>({store,record_id:String(r.id),data:r,updated_at:new Date().toISOString()}));
         for(let i=0;i<rows.length;i+=200){
           const {error}=await sb.from('sdm_records').upsert(rows.slice(i,i+200),{onConflict:'store,record_id'});
           if(error)throw error;
